@@ -1,0 +1,5 @@
+// 自定义覆盖变量
+@use './vars.scss' as *;
+
+// Element Plus 的主样式文件， 会使用上面覆盖过的变量来生成最终的样式。
+@use 'element-plus/theme-chalk/src/index.scss' as *;

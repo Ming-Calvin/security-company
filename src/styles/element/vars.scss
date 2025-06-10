@@ -1,0 +1,21 @@
+// 使用 @forward 规则来覆盖 Element Plus 的默认变量
+@forward 'element-plus/theme-chalk/src/common/var.scss' with (
+  // 需要覆盖的变量
+  $colors: (
+    'primary': (
+      'base': #0052D9, // 将主色从默认的 #409EFF 修改为你的品牌色
+    ),
+    'success': (
+      'base': #00B42A,
+    ),
+    'warning': (
+      'base': #FF7D00,
+    ),
+    'danger': (
+      'base': #F53F3F,
+    ),
+    'error': (
+      'base': #F53F3F,
+    )
+  )
+);
