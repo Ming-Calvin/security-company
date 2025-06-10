@@ -7,7 +7,7 @@
           <span class="title-text">问题库</span>
         </div>
         <div class="header-actions">
-          <el-button type="primary" :icon="Plus">新建</el-button>
+          <el-button type="primary" :icon="Plus" @click="handleCreate">新建</el-button>
           <el-button :icon="Upload">导入</el-button>
           <el-button :icon="Position">批量提交</el-button>
         </div>
@@ -162,6 +162,10 @@ import type { FormInstance } from 'element-plus';
 import {
   Search, Refresh, Plus, Upload, Position, ArrowDown, QuestionFilled, Setting
 } from '@element-plus/icons-vue';
+import { useRouter } from 'vue-router';
+
+// =========== 路由 ===========
+const router = useRouter();
 
 // =========== 类型定义 (保持不变) ===========
 interface ProblemItem {
@@ -269,9 +273,6 @@ const handleTabChange = (tabName: string | number) => {
 const handleSelectionChange = (selection: ProblemItem[]) => {
   console.log('Selected rows:', selection);
 };
-const handleSubmit = (row: ProblemItem) => {
-  console.log('提交研判:', row);
-};
 const handleEdit = (row: ProblemItem) => {
   console.log('编辑:', row);
 };
@@ -293,6 +294,45 @@ const formatDate = (timestamp: number | undefined) => {
 onMounted(() => {
   getList();
 });
+
+// --- [新增] 事件处理函数 ---
+
+/**
+ * @description: 点击“新建”按钮，跳转到问题录入页面
+ */
+const handleCreate = () => {
+  console.log('跳转到新建页面...');
+  router.push({ name: 'problem-entry' });
+};
+
+/**
+ * @description: 点击“提交研判”，执行提交动作并跳转到详情页
+ * @param {ProblemItem} row - 当前行的数据
+ */
+const handleSubmit = (row: ProblemItem) => {
+  console.log('提交研判:', row);
+  // 在这里可以先调用API执行提交动作
+  // ... your api call here ...
+
+  // 根据你的要求，然后跳转到详情页
+  router.push({
+    name: 'problem-detail',
+    params: { id: row.id }
+  });
+};
+
+/**
+ * @description: [建议] 点击表格中的具体问题，查看详情
+ * @param {ProblemItem} row - 当前行的数据
+ */
+// const handleViewDetails = (row: ProblemItem) => {
+//   console.log('查看详情:', row);
+//   router.push({
+//     name: 'ProblemDetails',
+//     params: { id: row.id }
+//   });
+// };
+
 </script>
 
 <style lang="scss" scoped>

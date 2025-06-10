@@ -45,6 +45,16 @@ const router = createRouter({
         },
       ]
     },
+    {
+      path: '/problem-entry',
+      name: 'problem-entry',
+      component: () => import('../views/ProblemEntry.vue'),
+    },
+    {
+      path: '/problem-detail',
+      name: 'problem-detail',
+      component: () => import('../views/ProblemDetails.vue'),
+    },
     // (可选) 404 页面
     // {
     //   path: '/:pathMatch(.*)*',
