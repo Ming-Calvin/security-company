@@ -57,29 +57,25 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useStore } from 'vuex';
+// import { useStore } from 'vuex';
 import { Search } from '@element-plus/icons-vue';
 
 const route = useRoute();
 const router = useRouter();
-const store = useStore();
+// const stores = useStore();
 
 const searchQuery = ref('');
+const activeMenu = ref('/question-bank');
 
-// const userInfo = computed(() => store.getters['user/userInfo']);
+// const userInfo = computed(() => stores.getters['user/userInfo']);
 const userInfo = {}
-
-// 生成面包屑数据
-const breadcrumbItems = computed(() => {
-  return route.matched.filter(item => item.meta && item.meta.title);
-});
 
 const goToProfile = () => {
   router.push('/profile');
 };
 
 const handleLogout = () => {
-  store.dispatch('user/logout');
+  // stores.dispatch('user/logout');
   router.push('/login');
 };
 </script>

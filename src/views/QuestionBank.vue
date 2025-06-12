@@ -163,6 +163,25 @@ import {
   Search, Refresh, Plus, Upload, Position, ArrowDown, QuestionFilled, Setting
 } from '@element-plus/icons-vue';
 import { useRouter } from 'vue-router';
+// 查询问题数量
+import { getProblemCount, type ProblemCountData } from '@/services/api/problemWarehouse';
+
+// 获取数量
+const counts = ref<ProblemCountData | null>(null);
+
+const fetchCounts = async () => {
+  try {
+    const response = await getProblemCount();
+
+    if(response.code === 200) {
+      counts.value = response.data;
+    } else {
+      console.log('获取失败')
+    }
+  } catch (e) {
+    console.log('请求失败', e)
+  }
+}
 
 // =========== 路由 ===========
 const router = useRouter();
@@ -293,6 +312,7 @@ const formatDate = (timestamp: number | undefined) => {
 // =========== 生命周期钩子 (保持不变) ===========
 onMounted(() => {
   getList();
+  fetchCounts();
 });
 
 // --- [新增] 事件处理函数 ---

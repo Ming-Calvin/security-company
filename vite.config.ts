@@ -66,4 +66,15 @@ export default defineConfig({
       },
     },
   },
+
+  // 跨域处理
+  server: {
+    port: 8080,
+    proxy: {
+      '/standard': {
+        target: 'http://192.168.21.68:9009',
+        changeOrigin: true,
+      }
+    }
+  }
 })

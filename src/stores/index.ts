@@ -1,7 +1,5 @@
-// // src/store/index.ts
-//
 // import { createStore, createLogger } from 'vuex';
-// import userModule, { UserState } from './modules/user';
+// // import userModule, { UserState } from './modules/user';
 //
 // // 定义根 state 的类型
 // export interface RootState {

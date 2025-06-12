@@ -19,8 +19,9 @@ import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 
 const app = createApp(App)
+const pinia = createPinia()
 
-app.use(createPinia())  // 启用 Pinia
+app.use(pinia)  // 启用 Pinia
 app.use(router)         // 启用 Vue Router
 app.use(ElementPlus, { locale: zhCn })    // 启用 Element Plus
 
