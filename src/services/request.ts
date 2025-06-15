@@ -29,10 +29,9 @@ instance.interceptors.request.use(
 instance.interceptors.response.use(
   (response: AxiosResponse) => {
     const res = response.data;
-    if (res.code !== 200 && res.status !== 'success') {
-      alert(`API Error: ${res.message || 'Error'}`);
-      return Promise.reject(new Error(res.message || 'Error'));
-    }
+    // if (res.code !== 200 && res.status !== 'success') {
+    //   return Promise.reject(new Error(res.message || 'Error'));
+    // }
     return res;
   },
   (error) => {

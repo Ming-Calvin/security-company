@@ -17,10 +17,12 @@
 
       <div class="filter-container">
         <el-tabs v-model="activeStatus" class="filter-tabs" @tab-change="handleTabChange">
-          <el-tab-pane label="全部问题" name="all"></el-tab-pane>
-          <el-tab-pane label="未提交" name="1"></el-tab-pane>
-          <el-tab-pane label="审核中" name="2"></el-tab-pane>
-          <el-tab-pane label="已审慎" name="3"></el-tab-pane>
+          <el-tab-pane
+            v-for="tab in tabs"
+            :key="tab.name"
+            :label="`${tab.label} (${tab.count})`"
+            :name="tab.name"
+          ></el-tab-pane>
         </el-tabs>
 
         <div class="filter-form-area">
@@ -48,17 +50,17 @@
               </el-col>
 
               <el-col :span="8">
-                <el-form-item label="检查部门" prop="inspectionDept">
-                  <el-input v-model="queryParams.inspectionDept" placeholder="请输入检查部门" clearable />
+                <el-form-item label="检查部门" prop="Q^pw.F_INSPECTION_DEPT^SL">
+                  <el-input v-model="queryParams['Q^pw.F_INSPECTION_DEPT^SL']" placeholder="请输入检查部门" clearable />
                 </el-form-item>
               </el-col>
               <el-col :span="8">
-                <el-form-item label="被查部门" prop="inspectedDept">
-                  <el-input v-model="queryParams.inspectedDept" placeholder="请输入被检查部门" clearable />
+                <el-form-item label="被查部门" prop="Q^pw.F_DEPT_SUBJECT_INSPECTION^SL">
+                  <el-input v-model="queryParams['Q^pw.F_DEPT_SUBJECT_INSPECTION^SL']" placeholder="请输入被检查部门" clearable />
                 </el-form-item>
               </el-col>
               <el-col :span="8">
-                <el-form-item label="录入时间" prop="entryTimeRange">
+                <el-form-item label="录入时间" prop="Q^pw.F_ENTRY_TIME^DL">
                   <el-date-picker
                     v-model="queryParams.entryTimeRange"
                     type="daterange"
@@ -164,23 +166,91 @@ import {
 } from '@element-plus/icons-vue';
 import { useRouter } from 'vue-router';
 // 查询问题数量
-import { getProblemCount, type ProblemCountData } from '@/services/api/problemWarehouse';
+import { getProblemCount, getProblemList } from '@/services/api/problemDatabase'
+import type {
+  ProblemCountData, ProblemListParams,
+  ProblemListResponse
+} from '@/services/api/problemDatabase/types.ts'
 
 // 获取数量
-const counts = ref<ProblemCountData | null>(null);
+const counts = ref<ProblemCountData>({
+  AllCount: 0,
+  runningCount: 0,
+  noCommitCount: 0,
+  endCount: 0,
+});
 
-const fetchCounts = async () => {
+// Tab数据结构
+interface Tab {
+  label: string;
+  name: string;
+  count: number;
+  apiKey: keyof ProblemCountData;
+}
+
+const activeStatus = ref('all');
+const tabs = ref<Tab[]>([
+  { label: '全部问题', name: 'all', count: 0, apiKey: 'AllCount' },
+  { label: '未提交', name: '1', count: 0, apiKey: 'noCommitCount' },
+  { label: '审核中', name: '2', count: 0, apiKey: 'runningCount' },
+  { label: '已审慎', name: '3', count: 0, apiKey: 'endCount' },
+]);
+
+// 获取问题数量
+const getProblemCountFun = async () => {
   try {
     const response = await getProblemCount();
 
     if(response.code === 200) {
       counts.value = response.data;
+
+      tabs.value.forEach(tab => {
+        tab.count = counts.value[tab.apiKey];
+      })
     } else {
       console.log('获取失败')
     }
   } catch (e) {
     console.log('请求失败', e)
   }
+}
+
+// 列表查询参数
+const queryParams: ProblemListParams = reactive({
+  // [修改] 设置合理的分页和排序初始值
+  page: 1,
+  rows: 10,
+  sort: 'ID_',
+  order: 'desc',
+  status: '',
+  keyword: '',
+  problemType: ''
+});
+
+const loading = ref(true);
+const total = ref(0);
+const tableData = ref<ProblemItem[]>([]);
+
+// 获取问题列表
+const getList = async () => {
+  loading.value = true;
+
+  try {
+    const response = await getProblemList(queryParams);
+
+    if(response.code === 200) {
+      tableData.value = response.data.rows;
+      total.value = response.data.pageResult.totalCount;
+    } else {
+      console.error('获取列表失败')
+    }
+
+  } catch (e) {
+    console.error('请求失败', e)
+  } finally {
+    loading.value = false
+  }
+
 }
 
 // =========== 路由 ===========
@@ -203,77 +273,8 @@ interface ProblemItem {
 }
 
 // =========== 响应式状态 (保持不变) ===========
-const loading = ref(true);
-const total = ref(0);
-const tableData = ref<ProblemItem[]>([]);
-const activeStatus = ref('all');
+
 const queryFormRef = ref<FormInstance>();
-const queryParams = reactive({
-  page: 1,
-  rows: 10,
-  sort: 'ID_',
-  order: 'desc',
-  status: '',
-  keyword: '',
-  problemType: '',
-  problemSource: '',
-  inspectionDept: '',
-  inspectedDept: '',
-  entryTimeRange: [],
-});
-
-// =========== API 调用 (模拟) - 已更新返回结构 ===========
-const mockApiRequest = (params: any) => {
-  console.log('Fetching data with params:', params);
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      // 模拟后端返回的、包含 pageResult 的完整数据结构
-      const mockResponse = {
-        pageResult: {
-          endRow: 10,
-          firstPage: true,
-          hasNextPage: true,
-          hasPrePage: false,
-          lastPage: false,
-          limit: 10,
-          nextPage: 2,
-          offset: 0,
-          page: 1,
-          prePage: 1,
-          slider: [1, 2, 3, 4, 5],
-          startRow: 1,
-          totalCount: 2,
-          totalPages: 0
-        },
-        rows: [ // 这里是你的数据列表
-          { fWorkNo: "1", fInspectionDept: "数运部", fDeptSubjectInspection: "数运部", fInspectionItems: 'xxxx', fDiscoverTime: 1749832800000, fProblemDescription: '打工人必看', fProblemType: '组织监督', fIsIllegal: 1, fEntryTime: 1749832800000, fAdviceTime: 1749832800000, fIsCommit: 1, id: "2490000000320023" },
-          { fWorkNo: "2", fInspectionDept: "综合部", fDeptSubjectInspection: "综合部", fInspectionItems: 'xxxx', fDiscoverTime: 1749139200000, fProblemDescription: '制度监督', fProblemType: '民主监督', fIsIllegal: 0, fEntryTime: 1749139200000, fAdviceTime: 1749139200000, fIsCommit: 0, id: "2490000000320017" },
-          // ... 更多数据
-        ],
-        // 注意：根级别的 total 字段可能不存在了，我们不再需要它
-      };
-      resolve(mockResponse);
-    }, 500);
-  });
-};
-
-
-// =========== getList 函数 - 核心修改点 ===========
-/**
- * 获取列表数据
- */
-const getList = async () => {
-  loading.value = true;
-  // 在这里替换成你真实的 axios 请求
-  // const response = await yourApi.getList(queryParams);
-  const response: any = await mockApiRequest(queryParams);
-
-  // 从 response 中正确地提取数据和总数
-  tableData.value = response.rows;
-  total.value = response.pageResult.totalCount; // <--- 核心修改在这里
-
-  loading.value = false;
-};
 
 
 // =========== 事件处理 (保持不变) ===========
@@ -312,7 +313,7 @@ const formatDate = (timestamp: number | undefined) => {
 // =========== 生命周期钩子 (保持不变) ===========
 onMounted(() => {
   getList();
-  fetchCounts();
+  getProblemCountFun();
 });
 
 // --- [新增] 事件处理函数 ---
@@ -325,19 +326,11 @@ const handleCreate = () => {
   router.push({ name: 'problem-entry' });
 };
 
-/**
- * @description: 点击“提交研判”，执行提交动作并跳转到详情页
- * @param {ProblemItem} row - 当前行的数据
- */
+// 提交研判
 const handleSubmit = (row: ProblemItem) => {
-  console.log('提交研判:', row);
-  // 在这里可以先调用API执行提交动作
-  // ... your api call here ...
-
-  // 根据你的要求，然后跳转到详情页
   router.push({
     name: 'problem-detail',
-    params: { id: row.id }
+    query: { id: row.id }
   });
 };
 

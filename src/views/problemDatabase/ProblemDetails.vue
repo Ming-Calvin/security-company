@@ -9,8 +9,8 @@
             </template>
           </el-page-header>
           <div class="header-actions">
-            <el-button type="primary">提交研判</el-button>
-            <el-button type="danger">撤回</el-button>
+            <el-button type="primary" @click="submit">提交研判</el-button>
+<!--            <el-button type="danger">撤回</el-button>-->
             <el-button>流转记录</el-button>
             <el-button>流程图</el-button>
             <el-button>编辑</el-button>
@@ -83,36 +83,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { Link, Document } from '@element-plus/icons-vue';
-
-// --- [修改] 类型定义已更新以匹配API ---
-interface ProblemDetails {
-  id: string;
-  fAdviceTime: number;
-  fCharger: string;
-  fChargerId: string;
-  fDeptSubjectInspection: string;
-  fDeptSubjectInspectionId: string;
-  fDiscoverTime: number;
-  fDocuments: string; // 注意：这是一个字符串，需要解析
-  fEntryTime: number;
-  fInspectionDept: string;
-  fInspectionItems: string;
-  fIsAssetTransfer: 0 | 1;
-  fIsCommit: 0 | 1;
-  fIsIllegal: 0 | 1;
-  fJcbmidinspectionDeptId: string;
-  fLeader: string;
-  fLeaderId: string;
-  fOtherAdvice: string;
-  fProblemDescription: string;
-  fProblemSource: string;
-  fProblemType: string;
-  fProposer: string;
-  fProposerId: string;
-  fWorkNo: string;
-}
+import type { ProblemDetail } from '@/services/api/problemDatabase/types.ts'
+import { getProblemDetails, problemWarehouseCommit } from '@/services/api/problemDatabase'
+import { getQuestionOrderTaskId } from '@/services/api'
 
 interface AttachmentFile {
   name: string;
@@ -122,8 +97,34 @@ interface AttachmentFile {
 
 // --- 响应式状态 ---
 const router = useRouter();
+const route = useRoute();
 const loading = ref(true);
-const details = ref<ProblemDetails | null>(null);
+const details = ref<ProblemDetail>({
+  id: '',
+  refId: '',
+  fDiscoverTime: '',
+  fEntryTime: '',
+  fAdviceTime: '',
+  fInspectionDept: '',
+  fInspectionDeptId: '',
+  fDeptSubjectInspection: '',
+  fDeptSubjectInspectionId: '',
+  fInspectionItems: '',
+  fProblemDescription: '',
+  fProblemSource: '',
+  fProblemType: '',
+  fDocuments: '',
+  fIsIllegal: '',
+  fIsAssetTransfer: '',
+  fIsCommit: '',
+  fOtherAdvice: '',
+  fProposer: '',
+  fProposerId: '',
+  fLeader: '',
+  fLeaderId: '',
+  fCharger: '',
+  fChargerId: '',
+});
 
 // --- [修改] 基于 details.fDocuments 计算附件列表 ---
 const attachmentList = computed((): AttachmentFile[] => {
@@ -151,52 +152,75 @@ const handleGoBack = () => {
   router.back();
 };
 
-// --- API (模拟) ---
-const fetchDetails = () => {
-  loading.value = true;
-  setTimeout(() => {
-    // [修改] 使用你提供的真实接口数据作为模拟数据
-    details.value = {
-      "fAdviceTime":1749139200000,
-      "fCharger":"整改责任人",
-      "fChargerId":"整改责任人ID",
-      "fDeptSubjectInspection":"被检查部门, 综合部",
-      "fDeptSubjectInspectionId":"被检查部门ID",
-      "fDiscoverTime":1717516800000, // 修改为接近当前的时间以便观察
-      "fDocuments":"会议纪要.pptx",
-      "fEntryTime":1717516800000,
-      "fInspectionDept":"检查部门",
-      "fInspectionItems":"关于XX问题的专项检查",
-      "fIsAssetTransfer":1,
-      "fIsCommit":0,
-      "fIsIllegal":1,
-      "fJcbmidinspectionDeptId":"检查部门ID",
-      "fLeader":"研判领导A, 研判领导B",
-      "fLeaderId":"研判领导ID",
-      "fOtherAdvice":"建议加强内部培训，完善相关流程，并定期进行复盘，确保问题不再发生。建议加强内部培训，完善相关流程，并定期进行复盘。",
-      "fProblemDescription":"在对2025年第一季度财务报表进行审计时，发现存在多笔账目记录不清晰、凭证不全的情况，可能违反公司财务管理规定。",
-      "fProblemSource":"季度审计",
-      "fProblemType":"财务合规",
-      "fProposer":"张美美",
-      "fProposerId":"提出人ID",
-      "fWorkNo":"Q-2025-0017",
-      "id":"2490000000320017"
-    };
-    loading.value = false;
-  }, 500);
-};
-
 // --- 工具函数 ---
 const formatDate = (timestamp: number | undefined) => {
   if (!timestamp) return '-';
   const date = new Date(timestamp);
-  // 使用 toLocaleDateString 可以更方便地格式化，且包含年月日
+  // 使用 toLocaleDate'' 可以更方便地格式化，且包含年月日
   return date.toLocaleDateString('zh-CN');
 };
 
+// 获取问题详情
+const getProblemDetailData = async () => {
+  const problemId : string = route.query.id;
+
+  try {
+    loading.value = true;
+    const response = await getProblemDetails(problemId);
+
+    if (response.success) {
+      details.value = response.data;
+
+      try {
+        const taskIdResponse = await getQuestionOrderTaskId({ processInstId: details.value.id})
+
+        if(taskIdResponse.data.length > 0) {
+          details.value.taskId = taskIdResponse.data[0].taskId;
+        } else {
+          details.value.taskId = null;
+        }
+      } catch (e) {
+        console.error('获取taskId失败', e)
+      }
+    } else {
+      ElMessage.error('获取详情失败');
+    }
+  } catch (err) {
+    ElMessage.error('失误：', err);
+  } finally {
+    loading.value = false;
+  }
+};
+
+// 提交研判
+const submit = async () => {
+  const startFlowParamObject =  {
+    account: "chenlijun1",
+    defId: "2490000000310172",
+    nodeUsers: "[{\"nodeId\":\"UserTask2\",\"executors\":[{\"id\":1003,\"name\":\"陈浩\"}]}]",
+    subject: "问题标题",
+    destination: "UserTask2",
+    formName: "【提交工单】"
+  }
+
+  const submitForm = { ...details.value , startFlowParamObject: startFlowParamObject }
+
+  try {
+    console.log(submitForm, 'submitForm')
+
+    const response = await problemWarehouseCommit(submitForm)
+
+    // console.log(response, 'response')
+
+  } catch (e) {
+    console.error('提交失败', e)
+  }
+}
+
+
 // --- 生命周期 ---
 onMounted(() => {
-  fetchDetails();
+  getProblemDetailData();
 });
 </script>
 
