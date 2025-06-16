@@ -21,13 +21,13 @@ const router = createRouter({
         {
           path: '/problem-ledger',
           name: 'problem-ledger',
-          component: () => import('../views/ProblemLedger.vue'),
-          meta: { title: '关于' }
+          component: () => import('../views/problemLedger/ProblemLedger.vue'),
+          meta: { title: '问题台账' }
         },
         {
           path: '/super-agency',
           name: 'super-agency',
-          component: () => import('../views/SuperAgency.vue'),
+          component: () => import('../views/superAgency/SuperAgency.vue'),
           meta: { title: '关于' }
         },
         {
@@ -47,6 +47,16 @@ const router = createRouter({
       path: '/problem-detail',
       name: 'problem-detail',
       component: () => import('../views/problemDatabase/ProblemDetails.vue'),
+    },
+    {
+      path: '/ledger-entry',
+      name: 'ledger-entry',
+      component: () => import('../views/problemLedger/LedgerEntry.vue'),
+    },
+    {
+      path: '/ledger-detail',
+      name: 'ledger-detail',
+      component: () => import('../views/problemLedger/LedgerDetail.vue'),
     },
     // (可选) 404 页面
     // {

@@ -65,7 +65,7 @@ const router = useRouter();
 // const stores = useStore();
 
 const searchQuery = ref('');
-const activeMenu = ref('/question-bank');
+const activeMenu = ref('');
 
 // const userInfo = computed(() => stores.getters['user/userInfo']);
 const userInfo = {}
@@ -78,6 +78,11 @@ const handleLogout = () => {
   // stores.dispatch('user/logout');
   router.push('/login');
 };
+
+// --- 生命周期 ---
+onBeforeMount(() => {
+  activeMenu.value = route.path
+});
 </script>
 
 <style lang="scss" scoped>

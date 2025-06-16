@@ -15,9 +15,10 @@ import type {
   ProblemListResponse,
   ProblemSavePayload,
   ProblemDetail,
-  ProblemDetailWithStartFlow
+  ProblemDetailWithStartFlow,
+  PendingListResponse,
+  PendingListParams
 } from './types.ts'
-
 
 // 问题数量统计
 export function getProblemCount() {
@@ -98,8 +99,17 @@ export function getUserTable(query: PeopleSelectUserParams) {
 // 发起接口
 export function problemWarehouseCommit(data: ProblemDetailWithStartFlow) {
   return request<ApiResponse<any>>({
-    url: 'core/problemWarehouse/problemWarehouse/commit',
-    method: 'get',
+    url: '/core/problemWarehouse/problemWarehouse/commit',
+    method: 'post',
     data
   });
 }
+
+export function getPendingList(params: PendingListParams) {
+  return request<ApiResponse<PendingListResponse>>({
+    url: '/office/receivedProcess/pendingJsonNew',
+    method: 'get',
+    params,
+  });
+}
+

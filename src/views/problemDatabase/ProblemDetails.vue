@@ -5,12 +5,11 @@
         <div class="card-header">
           <el-page-header @back="handleGoBack" class="page-header-title">
             <template #content>
-              <span class="font-bold">问题详情</span>
+              <span class="font-bold">督办详情</span>
             </template>
           </el-page-header>
           <div class="header-actions">
             <el-button type="primary" @click="submit">提交研判</el-button>
-<!--            <el-button type="danger">撤回</el-button>-->
             <el-button>流转记录</el-button>
             <el-button>流程图</el-button>
             <el-button>编辑</el-button>

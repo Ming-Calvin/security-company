@@ -147,3 +147,31 @@ export interface startFlowParamObject {
 export interface ProblemDetailWithStartFlow extends ProblemDetail {
   startFlowParamObject: startFlowParamObject;
 }
+
+// 待办列表
+export interface PendingListParams {
+  page: number;
+  rows: number;
+  sort: string;
+  order: 'asc' | 'desc';
+
+  'Q^subject_^SL'?: string;
+  'Q^PROC_DEF_NAME_^SL': string;
+}
+
+// 待办单个数据类型
+export interface PendingListItem {
+  id: string;
+  subject: string;
+  procDefName: string;
+  arrivalTime: string;
+  assignee: string;
+  currentStep: string;
+}
+
+// 待办列表返回
+export interface PendingListResponse {
+  pageResult: PageResult;
+  rows: PendingListItem[];
+  total: number;
+}

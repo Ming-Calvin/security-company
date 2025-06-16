@@ -322,7 +322,6 @@ onMounted(() => {
  * @description: 点击“新建”按钮，跳转到问题录入页面
  */
 const handleCreate = () => {
-  console.log('跳转到新建页面...');
   router.push({ name: 'problem-entry' });
 };
 
