@@ -4,6 +4,7 @@
     v-model="dialogVisible"
     append-to-body
     width="1200px"
+    top="50px"
     @close="cencal"
   >
     <div v-loading="loading" class="selectBox">
@@ -129,7 +130,7 @@ interface TreeNode {
 const props = defineProps({
   title: { type: String, default: "人员选择器" },
   treeName: { type: Object, default: () => ({ children: "children", label: "orgname" }) },
-  tableName: { type: Object, default: () => ({ name: "NAME_", dept: "PATH_NAME_" }) },
+  tableName: { type: Object, default: () => ({ name: "FULLNAME_", dept: "PARENT_CODE_NAME" }) },
   selectUser: { type: Array as () => User[], default: () => [] },
   multiple: { type: Boolean, default: false },
   fetchTreeApi: { type: Function, required: true },
@@ -164,7 +165,8 @@ const getList = async () => {
   try {
     const response = await props.fetchUserListApi(queryParams);
     tableData.value = response.rows || [];
-    total.value = response.pageResult?.totalCount || 0;
+
+    total.value = response.records || 0;
     updateTableSelection();
   } catch (error) {
     ElMessage.error("加载人员列表失败");
@@ -198,12 +200,12 @@ const doSearch = () => {
 };
 
 const handleRowClick = (row: User) => {
-  if (props.multiple) {
-    userTableRef.value?.toggleRowSelection(row, undefined);
-  } else {
-    singleSelectionId.value = row.hrId;
-    selectedPeople.value = [row];
-  }
+  // if (props.multiple) {
+  //   userTableRef.value?.toggleRowSelection(row, undefined);
+  // } else {
+  //   singleSelectionId.value = row.hrId;
+  //   selectedPeople.value = [row];
+  // }
 };
 
 const handleRadioChange = (row: User) => {
@@ -215,7 +217,7 @@ const handleSelectionChange = (selection: User[]) => {
   const newSelectionIds = new Set(selection.map(u => u.hrId));
 
   // 移除在当前页但未被勾选的人员
-  let newSelectedPeople = selectedPeople.value.filter(sp =>
+  const newSelectedPeople = selectedPeople.value.filter(sp =>
     !currentTableIds.has(sp.hrId) || newSelectionIds.has(sp.hrId)
   );
 
@@ -281,7 +283,6 @@ defineExpose({ init });
 </script>
 
 <style scoped lang="scss">
-/* 样式与之前版本类似，可以按需调整 */
 .selectBox {
   height: 450px; display: flex; flex-direction: row; justify-content: space-between; padding: 0 40px;
 }

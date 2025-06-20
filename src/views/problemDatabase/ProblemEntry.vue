@@ -152,20 +152,20 @@
           佐证材料
         </h3>
         <el-form-item prop="fDocuments">
-          <el-upload
-            action="#"
-            :auto-upload="false"
-            multiple
-          >
-            <el-button type="primary" plain :icon="Upload">上传</el-button>
-          </el-upload>
+          <FileUpload
+            v-model:file-list="fileLIst"
+            :limit="10"
+            :max-size="20"
+            tip="上传文件内容支持图片、文件，大小不超过20M。图片格式支持：jpg、jpeg、png、bmp；文件格式支持：doc、docx、xls、xlsx、pdf、zip、rar"
+            @change="handleFilesChange"
+          />
         </el-form-item>
 
       </el-form>
     </el-card>
   </div>
 
-  <SelectPeople
+  <PeopeleSelect
     ref="selectPeopleRef"
     title="选择检查部门"
     :select-user="initialSelectedUsers"
@@ -177,19 +177,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router';
 import { ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus';
-import { Plus, Link, Upload } from '@element-plus/icons-vue';
+import { Plus, Link } from '@element-plus/icons-vue';
 
 // 接口
 import { getTreeList, getUserTable, saveProblem } from '@/services/api/problemDatabase'
 import type { ProblemSavePayload } from '@/services/api/problemDatabase/types.ts'
 
 // 人员选择器
-import SelectPeople from '@/components/peopeleSelect.vue';
+import PeopeleSelect from '@/components/PeopeleSelect.vue';
 import type { PeopleSelectUserTable } from '@/services/api/types.ts'
+
+// 上传组件
+import type { UploadUserFile } from 'element-plus';
 
 const router = useRouter();
 const formRef = ref<FormInstance>();
@@ -255,7 +258,7 @@ const handleSubmit = async () => {
         const response = await saveProblem(formData);
 
         // 保存成功
-        if(response.result === 1) {
+        if(response.code === 200) {
           ElMessage.success('保存成功');
           router.push({ name: 'question-bank' });
         } else {
@@ -273,7 +276,7 @@ const handleSubmit = async () => {
 
 /*------人员选择器------*/
 // InstanceType -- 获取 defineExpose 暴露的方法
-const selectPeopleRef = ref<InstanceType<typeof SelectPeople> | null>(null);
+const selectPeopleRef = ref<InstanceType<typeof PeopeleSelect> | null>(null);
 
 // 存储当前打开人员选择器的字段
 const currentTargetProp = ref('');
@@ -342,10 +345,20 @@ const handleDeptSelected = (selected: any[]) => {
   }
 };
 
-const clearDept = () => {
-  formData.fInspectionDept = '';
-  formData.fInspectionDeptId = '';
+/*------文件上传------*/
+const fileLIst = ref<UploadUserFile[]>([]);
+
+const handleFilesChange = (fileList: any[]) => {
+  const uploadList = fileList.map(item => {
+    return {
+      name: item.fileName,
+      id: item.id
+    }
+  })
+
+  formData.fDocuments = JSON.stringify(uploadList)
 };
+
 </script>
 
 <style lang="scss" scoped>

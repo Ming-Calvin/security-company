@@ -12,7 +12,7 @@
             <el-button type="primary" @click="openUpdateDialog()">更新进展</el-button>
             <el-button type="primary" @click="openEvaluationModal()">纪委评价</el-button>
             <el-button>流转记录</el-button>
-            <el-button>流程图</el-button>
+            <el-button @click="isFlowModalVisible = true">流程图</el-button>
             <el-button>编辑</el-button>
             <el-button>删除</el-button>
           </div>
@@ -132,7 +132,7 @@
 
             <el-table-column label="评价人" width="220">
               <template #default="scope">
-                <span>{{ scope.row.fEvaluater }} ({{ scope.row.fEvaluaterDept }})</span>
+                <span>{{ scope.row.fEvaluater }}</span>
               </template>
             </el-table-column>
 
@@ -156,7 +156,7 @@
     v-if="isModalVisible"
     v-model="isModalVisible"
     :record-id="currentRecordId"
-    @success="handleUpdateSuccess"
+    @success="handleProgressSuccess"
   />
 
   <EvaluationModal
@@ -166,6 +166,13 @@
     @success="handleEvaluationSuccess"
   />
 
+  <FlowChartModal
+    v-if="isFlowModalVisible"
+    v-model="isFlowModalVisible"
+    :nodes="complexNodes"
+    :edges="complexEdges"
+    title="完整业务流程"
+  />
 </template>
 
 <script setup lang="ts">
@@ -183,6 +190,9 @@ import UpdateProgressModal from './UpdateProgressModal.vue';
 // 评价组件
 import EvaluationModal from './EvaluationModal.vue';
 // import type { RectProcessListParams } from '@/services/api/problemLedger/types.ts'
+
+import FlowChartModal from '@/components/FlowChartModal.vue';
+import type { Node, Edge } from '@vue-flow/core';
 
 // 更新进展列表
 const progressList = ref([])
@@ -261,7 +271,7 @@ const getRectProcessData = async () => {
     page: 1,
     rows: 10,
     order: 'asc',
-    "Q^REF_ID_^SL": '2500000000180047'
+    "Q^REF_ID_^SL": route.query.id
   }
 
   try {
@@ -283,9 +293,16 @@ const getRectProcessData = async () => {
 
 // 获取监督评价详情
 const getRectEvaluationData = async () => {
+  const queryParams: RectProcessListParams = {
+    page: 1,
+    rows: 10,
+    order: 'asc',
+    "Q^REF_ID_^SL": route.query.id
+  }
+
   try {
     loading.value = true;
-    const response = await getRectEvaluationList();
+    const response = await getRectEvaluationList(queryParams);
 
     if (response.success) {
       evaluationList.value = response.data.rows
@@ -325,9 +342,52 @@ const openEvaluationModal = () => {
   isEvaluationModalVisible.value = true;
 }
 
-const handleUpdateSuccess = () => {
-  console.log('进展已更新，正在刷新列表...');
+// 整改更新
+const handleProgressSuccess = () => {
+  getRectProcessData();
 };
+
+// 评价更新
+const handleEvaluationSuccess = () => {
+  getRectEvaluationData();
+}
+
+/*------流程图------*/
+const isFlowModalVisible = ref(false);
+
+const complexNodes = ref<Node[]>([
+  // 第一排
+  { id: 'start', type: 'input', label: '系统生成台账', position: { x: 950, y: 0 } },
+  // 第二排 (主流程)
+  { id: 'confirm', label: '监督责任部门经理确认监督来源和监督类型', position: { x: 600, y: 150 } },
+  { id: 'pending_start', label: '待启动', position: { x: 350, y: 150 } },
+  { id: 'rectifying', label: '整改中 (整改责任人)', position: { x: 0, y: 150 } },
+  // 第三排 (评价流程)
+  { id: 'rectify_dept_eval', label: '整改部门经理评价', position: { x: 0, y: 450 } },
+  { id: 'rectify_leader_eval', label: '整改责任部门分管领导评分', position: { x: 250, y: 450 } },
+  { id: 'supervise_dept_eval', label: '监督部门经理评价', position: { x: 500, y: 450 } },
+  { id: 'supervise_leader_eval', label: '分管领导评价', position: { x: 750, y: 450 } },
+  { id: 'end', type: 'output', label: '结束', position: { x: 1000, y: 450 } },
+]);
+
+const complexEdges = ref<Edge[]>([
+  // 主流程
+  { id: 'e-start-confirm', source: 'start', target: 'confirm', type: 'smoothstep' },
+  { id: 'e-confirm-pending', source: 'confirm', target: 'pending_start', type: 'smoothstep', label: '确认提交' },
+  { id: 'e-pending-rectifying', source: 'pending_start', target: 'rectifying', type: 'smoothstep', label: '启动整改' },
+  // 评价流程
+  { id: 'e-rectifying-eval', source: 'rectifying', target: 'rectify_dept_eval', type: 'smoothstep', label: '整改完成' },
+  { id: 'e-rectify-dept-leader', source: 'rectify_dept_eval', target: 'rectify_leader_eval', type: 'smoothstep' },
+  { id: 'e-rectify-leader-supervise', source: 'rectify_leader_eval', target: 'supervise_dept_eval', type: 'smoothstep' },
+  { id: 'e-supervise-dept-leader', source: 'supervise_dept_eval', target: 'supervise_leader_eval', type: 'smoothstep', label: '评价通过' },
+  { id: 'e-supervise-leader-end', source: 'supervise_leader_eval', target: 'end', type: 'smoothstep', label: '评分通过' },
+  // // 退回连线
+  // { id: 'e-rectifying-pending', source: 'rectifying', target: 'pending_start', type: 'smoothstep', label: '退回责任人, 重新整改', sourceHandle: 'top', targetHandle: 'top' },
+  // { id: 'e-supervise-leader-confirm', source: 'supervise_leader_eval', target: 'confirm', type: 'smoothstep', label: '退回责任人, 重新整改', sourceHandle: 'top', targetHandle: 'top' },
+  // // 退回上一步
+  // { id: 'e-rectify-leader-back', source: 'rectify_leader_eval', target: 'rectify_dept_eval', type: 'smoothstep', label: '退回上一步', sourceHandle: 'bottom', targetHandle: 'bottom' },
+  // { id: 'e-supervise-leader-back', source: 'supervise_leader_eval', target: 'supervise_dept_eval', type: 'smoothstep', label: '退回上一步', sourceHandle: 'bottom', targetHandle: 'bottom' },
+]);
 
 // --- 生命周期 ---
 onMounted(() => {

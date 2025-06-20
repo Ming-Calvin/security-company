@@ -8,8 +8,8 @@
         </div>
         <div class="header-actions">
           <el-button type="primary" :icon="Plus" @click="handleCreate">新建</el-button>
-          <el-button :icon="Upload">导入</el-button>
-          <el-button :icon="Position">批量提交</el-button>
+<!--          <el-button :icon="Upload">导入</el-button>-->
+<!--          <el-button :icon="Position">批量提交</el-button>-->
         </div>
       </div>
 
@@ -77,7 +77,7 @@
               <el-col :span="24" class="form-buttons">
                 <el-button type="primary" :icon="Search" @click="handleQuery">搜索</el-button>
                 <el-button :icon="Refresh" @click="resetQuery">重置</el-button>
-                <el-button :icon="Setting" circle class="ml-2" />
+<!--                <el-button :icon="Setting" circle class="ml-2" />-->
               </el-col>
             </el-row>
           </el-form>
@@ -90,7 +90,7 @@
       <el-table v-loading="loading" :data="tableData" @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column label="检查部门" prop="fInspectionDept" align="center" />
-        <el-table-column label="被检查部门" prop="fDeptSubjectInspection" align="center" />
+        <el-table-column label="被检查部门" prop="fDeptSubjectInspection" align="center" width="120"/>
         <el-table-column label="检查事项" prop="fInspectionItems" align="center" show-overflow-tooltip />
         <el-table-column label="发现问题时点" prop="fDiscoverTime" align="center" width="120">
           <template #default="scope">
@@ -109,9 +109,9 @@
             <span>{{ formatDate(scope.row.fEntryTime) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="提出时间" prop="fProposerTime" align="center" width="120">
+        <el-table-column label="提出时间" prop="fDiscoverTime" align="center" width="120">
           <template #default="scope">
-            <span>{{ formatDate(scope.row.fProposerTime) }}</span>
+            <span>{{ formatDate(scope.row.fDiscoverTime) }}</span>
           </template>
         </el-table-column>
         <el-table-column label="建议整改时点" prop="fAdviceTime" align="center" width="120">
@@ -124,7 +124,7 @@
             <span>{{ scope.row.fIsCommit === 1 ? '是' : '否' }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" align="center" width="200" fixed="right">
+        <el-table-column label="操作" align="center" width="150" fixed="right">
           <template #default="scope">
             <div style="display: flex">
               <el-button link type="primary" @click="handleSubmit(scope.row)">提交研判</el-button>
@@ -134,8 +134,8 @@
                 </el-button>
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item @click="handleEdit(scope.row)">编辑</el-dropdown-item>
-                    <el-dropdown-item @click="handleDelete(scope.row)" style="color: red;">删除</el-dropdown-item>
+<!--                    <el-dropdown-item @click="handleEdit(scope.row)">编辑</el-dropdown-item>-->
+                    <el-dropdown-item v-if="scope.row.status != ''" @click="handleDelete(scope.row)" style="color: red;">删除</el-dropdown-item>
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
@@ -167,10 +167,7 @@ import {
 import { useRouter } from 'vue-router';
 // 查询问题数量
 import { getProblemCount, getProblemList } from '@/services/api/problemDatabase'
-import type {
-  ProblemCountData, ProblemListParams,
-  ProblemListResponse
-} from '@/services/api/problemDatabase/types.ts'
+import type {ProblemCountData, ProblemListParams } from '@/services/api/problemDatabase/types.ts'
 
 // 获取数量
 const counts = ref<ProblemCountData>({
@@ -217,7 +214,6 @@ const getProblemCountFun = async () => {
 
 // 列表查询参数
 const queryParams: ProblemListParams = reactive({
-  // [修改] 设置合理的分页和排序初始值
   page: 1,
   rows: 10,
   sort: 'ID_',
@@ -333,23 +329,11 @@ const handleSubmit = (row: ProblemItem) => {
   });
 };
 
-/**
- * @description: [建议] 点击表格中的具体问题，查看详情
- * @param {ProblemItem} row - 当前行的数据
- */
-// const handleViewDetails = (row: ProblemItem) => {
-//   console.log('查看详情:', row);
-//   router.push({
-//     name: 'ProblemDetails',
-//     params: { id: row.id }
-//   });
-// };
-
 </script>
 
 <style lang="scss" scoped>
 .question-bank-container {
-  padding: 20px;
+  //padding: 20px;
 }
 
 // 顶部布局样式
@@ -405,4 +389,7 @@ const handleSubmit = (row: ProblemItem) => {
   margin: 20px;
 }
 
+.el-button.is-link {
+  padding: 0px;
+}
 </style>

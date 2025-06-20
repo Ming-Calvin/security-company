@@ -18,7 +18,7 @@
     <el-col :span="20">
       <el-card shadow="never">
         <el-tabs v-model="activeTab" @tab-change="handleTabChange">
-          <el-tab-pane label="待办 (0)" name="todo"></el-tab-pane>
+          <el-tab-pane :label="'待办 (' + total + ')'" name="todo"></el-tab-pane>
           <el-tab-pane label="已办 (0)" name="done"></el-tab-pane>
         </el-tabs>
 
@@ -47,24 +47,30 @@
         </div>
 
         <div class="table-area">
-          <el-table :data="tableData" v-loading="loading" style="width: 100%">
+          <el-table :data="tableData" v-loading="loading" style="width: 100%; height: 500px">
             <el-table-column type="index" label="序号" width="60" align="center" />
-            <el-table-column prop="description" label="问题描述" min-width="200" show-overflow-tooltip>
+
+            <el-table-column prop="subject" label="问题描述" min-width="250" show-overflow-tooltip/>
+
+            <el-table-column prop="procDefName" label="问题类型" width="150" align="center" />
+
+            <el-table-column prop="createTime" label="达到时间" width="180" align="center">
               <template #default="scope">
-                <el-button link type="primary" @click="viewDetails(scope.row)">{{ scope.row.description }}</el-button>
+                <span>{{ formatTimestamp(scope.row.createTime) }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="type" label="问题类型" width="120" align="center" />
-            <el-table-column prop="arrivalTime" label="达到时间" width="180" align="center" />
-            <el-table-column prop="assignee" label="当前处理人" width="120" align="center" />
-            <el-table-column prop="currentStep" label="当前环节" width="120" align="center">
+
+            <el-table-column prop="assigneeName" label="当前处理人" width="120" align="center" />
+
+            <el-table-column prop="name" label="当前环节" width="120" align="center">
               <template #default="scope">
-                <span :class="getStepClass(scope.row.currentStep)">{{ scope.row.currentStep }}</span>
+                <span :class="getStepClass(scope.row.status)">{{ scope.row.name }}</span>
               </template>
             </el-table-column>
+
             <el-table-column label="操作" width="180" align="center" fixed="right">
               <template #default="scope">
-                <el-button link type="primary" @click="handleApprove(scope.row)">审批通过</el-button>
+                <el-button link type="primary" @click="handleApprove(scope.row)">办理</el-button>
                 <el-button link type="danger" @click="handleReject(scope.row)">驳回</el-button>
               </template>
             </el-table-column>
@@ -74,7 +80,7 @@
         <div class="pagination-footer">
           <el-pagination
             v-model:current-page="queryParams.page"
-            v-model:page-size="queryParams.size"
+            v-model:page-size="queryParams.rows"
             :page-sizes="[10, 20, 50, 100]"
             layout="total, sizes, prev, pager, next, jumper"
             :total="total"
@@ -96,6 +102,7 @@ import {
   Setting
 } from '@element-plus/icons-vue';
 import { getPendingList } from '@/services/api/problemDatabase'
+import { useRouter } from 'vue-router'
 
 // --- 类型定义 ---
 interface JudgmentItem {
@@ -107,25 +114,26 @@ interface JudgmentItem {
   currentStep: '审批中' | '已通过';
 }
 
-// --- 响应式状态 ---
+// 路由
+const router = useRouter();
 
 // 左侧菜单
-const activeMenu = ref('judgment');
+const activeMenu = ref('问题研判');
 const menuItems = ref([
-  { key: 'judgment', label: '研判', icon: shallowRef(IconMenu) },
-  { key: 'evaluation', label: '监督评价', icon: shallowRef(Memo) },
-  { key: 'department', label: '部门评价', icon: shallowRef(Tickets) },
+  { key: '问题研判', label: '问题研判', icon: shallowRef(IconMenu) },
+  { key: '监督台账', label: '监督台账', icon: shallowRef(Memo) },
 ]);
 
 // 右侧内容区
 const activeTab = ref('todo');
 const loading = ref(false);
-const total = ref(800); // 模拟总数
+const total = ref(0);
 const queryParams = reactive({
   keyword: '',
   date: null,
   page: 1,
-  size: 10,
+  rows: 10,
+  'Q^PROC_DEF_NAME_^SL': activeMenu.value
 });
 
 const tableData = ref<[]>([]);
@@ -156,7 +164,8 @@ const getList = async () => {
 
 const handleMenuClick = (key: string) => {
   activeMenu.value = key;
-  // 切换主菜单通常会重置所有筛选条件并重新加载数据
+  queryParams['Q^PROC_DEF_NAME_^SL'] = key
+
   resetQuery();
 };
 
@@ -172,13 +181,44 @@ const resetQuery = () => {
   getList();
 };
 
-const getStepClass = (step: string) => {
-  return step === '审批中' ? 'status-in-progress' : 'status-approved';
+// 办理
+const handleApprove = (row: JudgmentItem) => {
+  router.push({
+    name: 'problem-detail',
+    query: { procInstId: row.procInstId, taskId: row.id, nodeId: row.nodeId }
+  });
+}
+
+const handleReject = (row: JudgmentItem) => console.log('驳回:', row.id);
+
+/**
+ * 将时间戳格式化为 YYYY-MM-DD HH:mm:ss
+ * @param timestamp
+ */
+const formatTimestamp = (timestamp: number) => {
+  if (!timestamp) return '-';
+  const date = new Date(timestamp);
+  const Y = date.getFullYear();
+  const M = (date.getMonth() + 1).toString().padStart(2, '0');
+  const D = date.getDate().toString().padStart(2, '0');
+  const h = date.getHours().toString().padStart(2, '0');
+  const m = date.getMinutes().toString().padStart(2, '0');
+  const s = date.getSeconds().toString().padStart(2, '0');
+  return `${Y}-${M}-${D} ${h}:${m}:${s}`;
 };
 
-const viewDetails = (row: JudgmentItem) => console.log('查看详情:', row.id);
-const handleApprove = (row: JudgmentItem) => console.log('审批通过:', row.id);
-const handleReject = (row: JudgmentItem) => console.log('驳回:', row.id);
+/**
+ * 根据环节状态返回不同的 CSS 类名
+ * @param status
+ */
+const getStepClass = (status: string) => {
+  if (status === 'NORMAL') {
+    return 'status-in-progress';
+  }
+  // 可以根据需要添加其他状态的样式
+  return 'status-default';
+};
+
 
 onMounted(() => {
   getList();

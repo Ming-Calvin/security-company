@@ -21,13 +21,13 @@
         />
       </el-form-item>
       <el-form-item label="附件" prop="fDocuments">
-        <el-upload
-          action="#"
-          :auto-upload="false"
-          multiple
-        >
-          <el-button :icon="Upload">上传文件</el-button>
-        </el-upload>
+        <FileUpload
+          v-model:file-list="fileLIst"
+          :limit="10"
+          :max-size="20"
+          tip="上传文件内容支持图片、文件，大小不超过20M。图片格式支持：jpg、jpeg、png、bmp；文件格式支持：doc、docx、xls、xlsx、pdf、zip、rar"
+          @change="handleFilesChange"
+        />
       </el-form-item>
     </el-form>
 
@@ -44,9 +44,11 @@
 import { ref, reactive } from 'vue';
 import type { FormInstance, FormRules } from 'element-plus';
 import { ElMessage } from 'element-plus';
-import { Upload } from '@element-plus/icons-vue';
 import { updateRectProcess } from '@/services/api/problemLedger/index.ts';
 import type { ProgressUpdatePayload } from '@/services/api/problemLedger/types.ts';
+
+// 上传组件
+import type { UploadUserFile } from 'element-plus';
 
 // --- Props & Emits ---
 const props = defineProps({
@@ -69,6 +71,8 @@ const rules = reactive<FormRules>({
   fUpdateContent: [{ required: true, message: '请输入进展说明', trigger: 'blur' }],
 });
 
+// 附件列表
+const fileLIst = ref([])
 
 // --- 方法 ---
 const handleSubmit = async () => {
@@ -110,5 +114,16 @@ const handleClose = () => {
 
 const resetForm = () => {
   formRef.value?.resetFields();
+};
+
+const handleFilesChange = (fileList: any[]) => {
+  const uploadList = fileList.map(item => {
+    return {
+      name: item.fileName,
+      id: item.id
+    }
+  })
+
+  formData.fDocuments = JSON.stringify(uploadList)
 };
 </script>

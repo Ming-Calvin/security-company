@@ -12,6 +12,10 @@ import 'virtual:uno.css'
 // 全局SCSS
 import './styles/main.scss'
 
+// 引入flow
+import '@vue-flow/core/dist/style.css';
+import '@vue-flow/core/dist/theme-default.css';
+
 // 引入所有图标
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 

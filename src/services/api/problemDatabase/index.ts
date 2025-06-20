@@ -17,8 +17,10 @@ import type {
   ProblemDetail,
   ProblemDetailWithStartFlow,
   PendingListResponse,
-  PendingListParams
+  PendingListParams, ProblemDetailsParams
 } from './types.ts'
+
+import qs from 'qs'
 
 // 问题数量统计
 export function getProblemCount() {
@@ -29,11 +31,11 @@ export function getProblemCount() {
 }
 
 // 问题数量列表
-export function getProblemList(data: ProblemListParams) {
+export function getProblemList(params: ProblemListParams) {
   return request<ApiResponse<ProblemListResponse>>({
     url: '/core/problemWarehouse/problemWarehouse/listJson',
     method: 'post',
-    data,
+    params,
   });
 }
 
@@ -47,32 +49,28 @@ export function saveProblem(data: ProblemSavePayload) {
 }
 
 // 根据id查询详情
-export function getProblemDetails(id: string) {
+export function getProblemDetails(params: ProblemDetailsParams) {
   return request<ApiResponse<ProblemDetail>>({
     url: '/core/problemWarehouse/problemWarehouse/getJson',
     method: 'get',
-    params: {
-      id: id
-    }
+    params
   });
 }
 
 // 获取组织部门树
-export function getTreeList(query: PeopleSelectTreeParams) {
+export function getTreeList(data: PeopleSelectTreeParams) {
   const staticParams = {
-    dialog_alias_: 'redCloudOrgSelector',
+    dialog_alias_: 'orgSelectorCombin',
     demId: 1,
-    type: 'redCloud',
-    ORG_PATH_: 'redCloud',
   };
 
   return request<PeopleSelectTreeResult[]>({
     url: "/form/customDialog/getTreeData",
-    method: "get",
+    method: "post",
     params: {
-      ...query,
       ...staticParams
-    }
+    },
+    data: qs.stringify(data)
   })
 }
 
@@ -80,10 +78,8 @@ export function getTreeList(query: PeopleSelectTreeParams) {
 export function getUserTable(query: PeopleSelectUserParams) {
   // 固定参数
   const staticParams = {
-    dialog_alias_: 'orgSelectorCombin',
+    dialog_alias_: 'userSelector',
     demId: 1,
-    ORG_PATH_: 'redCloud',
-    type: 'redCould',
   };
 
   return request<PeopleSelectUserTable> ({

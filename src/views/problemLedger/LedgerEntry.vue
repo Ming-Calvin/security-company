@@ -19,9 +19,9 @@
           <el-input v-model="formData.fProblemDescription" type="textarea" :rows="3" placeholder="请输入" />
         </el-form-item>
 
-        <el-form-item label="关联台账" prop="fConnectionBook">
-          <el-button :icon="Plus" circle @click="openLedgerSelector" />
-        </el-form-item>
+<!--        <el-form-item label="关联台账" prop="fConnectionBook">-->
+<!--          <el-button :icon="Plus" circle @click="openLedgerSelector" />-->
+<!--        </el-form-item>-->
 
         <el-divider />
 
@@ -123,7 +123,7 @@
     </el-card>
   </div>
 
-  <SelectPeople
+  <PeopeleSelect
     ref="selectPeopleRef"
     title="选择检查部门"
     :select-user="initialSelectedUsers"
@@ -145,7 +145,7 @@ import { saveLedger, type LedgerFormData } from '@/services/api/problemLedger/in
 import { getTreeList, getUserTable } from '@/services/api/problemDatabase'
 
 // 人员选择器
-import SelectPeople from '@/components/peopeleSelect.vue';
+import PeopeleSelect from '@/components/PeopeleSelect.vue';
 
 const router = useRouter();
 const formRef = ref<FormInstance>();
@@ -224,7 +224,7 @@ const openLedgerSelector = () => { ElMessage.info('打开关联台账选择器')
 
 // 人员选择器
 // InstanceType -- 获取 defineExpose 暴露的方法
-const selectPeopleRef = ref<InstanceType<typeof SelectPeople> | null>(null);
+const selectPeopleRef = ref<InstanceType<typeof PeopeleSelect> | null>(null);
 
 // 存储当前打开人员选择器的字段
 const currentTargetProp = ref({ nameField: '', idField: '' });

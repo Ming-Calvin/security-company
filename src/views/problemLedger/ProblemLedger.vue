@@ -97,24 +97,21 @@
         </div>
       </el-card>
 
-      <el-card>
+      <el-card shadow="never">
         <div class="table-page-container">
           <el-table
             v-loading="loading"
             :data="tableData"
-            style="width: 100%"
+            style="width: 100%; height: 500px"
             border
+            :row-key="row => row.id"
             @selection-change="handleSelectionChange"
           >
             <el-table-column type="selection" width="50" align="center" fixed="left" />
             <el-table-column type="index" label="序号" width="60" align="center" fixed="left" />
 
             <el-table-column label="基础信息" align="center">
-              <el-table-column prop="fWorkNo" label="监督事项" width="120" align="center">
-                <template #default="scope">
-                  <el-button link type="primary" @click="viewDetails(scope.row)">{{ scope.row.fSuperviseItems }}</el-button>
-                </template>
-              </el-table-column>
+              <el-table-column prop="fWorkNo" label="监督事项" width="120" align="center" show-overflow-tooltip/>
               <el-table-column prop="fProblemDescription" label="事项内容" width="120" align="center" show-overflow-tooltip />
               <el-table-column prop="fConnectionBook" label="关联事项" width="120" align="center" />
               <el-table-column prop="fSuperviseType" label="监督类型" width="100" align="center" />

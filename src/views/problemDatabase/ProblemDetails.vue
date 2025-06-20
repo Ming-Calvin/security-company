@@ -9,9 +9,16 @@
             </template>
           </el-page-header>
           <div class="header-actions">
-            <el-button type="primary" @click="submit">提交研判</el-button>
+            <el-button v-for="(item, index) in extractedBtnList"
+                       type="primary"
+                       :key="index"
+                       @click="openApprovalModal(item.nodeId)"
+            >
+              {{ item.nodeName }} {{ item.nodeId }}
+            </el-button>
+            <el-button type="primary" v-if="!route.query.taskId" @click="openApprovalModal('UserTask2')">提交研判</el-button>
             <el-button>流转记录</el-button>
-            <el-button>流程图</el-button>
+            <el-button @click="showFlowChartModal = true">流程图</el-button>
             <el-button>编辑</el-button>
             <el-button>删除</el-button>
           </div>
@@ -70,7 +77,6 @@
               <el-icon :size="24" color="#ff6b6b"><Document /></el-icon>
               <div class="file-info">
                 <span class="file-name">{{ file.name }}</span>
-                <span class="file-size">{{ file.size }}</span>
               </div>
             </div>
           </div>
@@ -78,6 +84,20 @@
       </div>
     </el-card>
   </div>
+
+  <SubmitComponent
+    ref="submitComponent"
+    v-if="isApprovalModalVisible"
+    v-model="isApprovalModalVisible"
+    @confirm="handleModalConfirm"
+  />
+
+  <FlowChartModal
+    v-if="showFlowChartModal"
+    v-model="showFlowChartModal"
+    :nodes="flowNodes"
+    :edges="flowEdges"
+  />
 </template>
 
 <script setup lang="ts">
@@ -86,7 +106,13 @@ import { useRouter, useRoute } from 'vue-router';
 import { Link, Document } from '@element-plus/icons-vue';
 import type { ProblemDetail } from '@/services/api/problemDatabase/types.ts'
 import { getProblemDetails, problemWarehouseCommit } from '@/services/api/problemDatabase'
-import { getQuestionOrderTaskId } from '@/services/api'
+import SubmitComponent from '@/views/problemDatabase/submitComponent.vue'
+import FlowChartModal from '@/components/FlowChartModal.vue'
+import type { Node, Edge, Position } from '@vue-flow/core';
+import { ElMessage } from 'element-plus'
+import { getTaskHandleDetailByTaskId } from '@/services/api'
+import PeopeleSelect from '@/components/PeopeleSelect.vue'
+
 
 interface AttachmentFile {
   name: string;
@@ -125,25 +151,11 @@ const details = ref<ProblemDetail>({
   fChargerId: '',
 });
 
-// --- [修改] 基于 details.fDocuments 计算附件列表 ---
+const isApprovalModalVisible = ref(false);
+
 const attachmentList = computed((): AttachmentFile[] => {
   if (!details.value?.fDocuments) return [];
-  // **注意**: 这里的解析逻辑是模拟的。
-  // 你需要根据 fDocuments 字段的真实格式（比如是逗号分隔的ID或URL）来编写解析逻辑。
-  // 此处我们仅为演示，将其视为一个简单的文件名。
-  return [
-    { name: details.value.fDocuments, size: '299kb', url: '#' },
-    { name: '补充材料.pdf', size: '1.2MB', url: '#' },
-  ];
-});
-
-const imageList = computed((): AttachmentFile[] => {
-  // 同理，图片列表也应基于解析 fDocuments 得来
-  return [
-    { url: 'https://fuss10.elemecdn.com/a/3f/3302e58f9a181d2509f3dc0fa68b0jpeg.jpeg', name: '', size: '' },
-    { url: 'https://fuss10.elemecdn.com/1/34/19aa98b1fcb2781c4fba33d850549jpeg.jpeg', name: '', size: '' },
-    { url: 'https://fuss10.elemecdn.com/0/6f/e35ff375812e6b0020b6b4e8f9583jpeg.jpeg', name: '', size: '' },
-  ];
+  return JSON.parse(details.value.fDocuments);
 });
 
 // --- 事件处理 ---
@@ -155,35 +167,28 @@ const handleGoBack = () => {
 const formatDate = (timestamp: number | undefined) => {
   if (!timestamp) return '-';
   const date = new Date(timestamp);
-  // 使用 toLocaleDate'' 可以更方便地格式化，且包含年月日
+
   return date.toLocaleDateString('zh-CN');
 };
 
 // 获取问题详情
 const getProblemDetailData = async () => {
-  const problemId : string = route.query.id;
-
   try {
     loading.value = true;
-    const response = await getProblemDetails(problemId);
+    const response = await getProblemDetails(
+      {
+        id: route.query.id,
+        procInstId: route.query.procInstId
+      }
+    );
 
     if (response.success) {
       details.value = response.data;
 
-      try {
-        const taskIdResponse = await getQuestionOrderTaskId({ processInstId: details.value.id})
-
-        if(taskIdResponse.data.length > 0) {
-          details.value.taskId = taskIdResponse.data[0].taskId;
-        } else {
-          details.value.taskId = null;
-        }
-      } catch (e) {
-        console.error('获取taskId失败', e)
-      }
     } else {
       ElMessage.error('获取详情失败');
     }
+
   } catch (err) {
     ElMessage.error('失误：', err);
   } finally {
@@ -191,35 +196,129 @@ const getProblemDetailData = async () => {
   }
 };
 
+// 提交组件
+const submitComponent = ref<InstaneType<typeof SubmitComponent> | null>(null)
+
+const nodeId = ref('')
+
+// 打开弹窗
+const openApprovalModal = (id?: string) => {
+  isApprovalModalVisible.value = true;
+  submitComponent.value?.init(id);
+  nodeId.value = id
+};
+
+const handleModalConfirm = (submitData: { executors: { id: string, name: string }, opinion: string }) => {
+  submit(submitData)
+};
+
+
+
 // 提交研判
-const submit = async () => {
-  const startFlowParamObject =  {
-    account: "chenlijun1",
-    defId: "2490000000310172",
-    nodeUsers: "[{\"nodeId\":\"UserTask2\",\"executors\":[{\"id\":1003,\"name\":\"陈浩\"}]}]",
-    subject: "问题标题",
-    destination: "UserTask2",
-    formName: "【提交工单】"
+const submit = async (submitData: { executors: { id: string, name: string }, opinion: string }) => {
+  // 提交数据
+  let submitForm = {}
+
+  if(route.query.taskId) {
+    const DoNextParamExtObject =  {
+      "nodeUsers": JSON.stringify([{nodeId: nodeId.value, executors: [{...submitData.executors}]}]),
+      "account": "liuzq",
+      "taskId": route.query.taskId,
+      "actionName": "agree",
+      "opinion": submitData.opinion,
+      "formType": "inner",
+      "jumpType": "select",
+      "destination": nodeId.value,
+      "opinionFiles": [],
+      "formName": ""
+    }
+
+    submitForm = { ...details.value , DoNextParamExtObject: DoNextParamExtObject }
+  } else {
+    const startFlowParamObject =  {
+      account: "liuzq",
+      defId: "2490000000310172",
+      nodeUsers: JSON.stringify([{nodeId: 'UserTask2', executors: [{...submitData.executors}]}]),
+      subject: "问题标题",
+      destination: 'UserTask2',
+      formName: "【提交工单】"
+    }
+
+    submitForm = { ...details.value , startFlowParamObject: startFlowParamObject }
   }
 
-  const submitForm = { ...details.value , startFlowParamObject: startFlowParamObject }
-
   try {
-    console.log(submitForm, 'submitForm')
-
+    loading.value = true
     const response = await problemWarehouseCommit(submitForm)
 
-    // console.log(response, 'response')
-
+    if(response.code === 200) {
+      ElMessage.success('提交成功');
+      router.push({ name: 'super-agency' });
+    } else {
+      ElMessage.error('保存失败');
+    }
   } catch (e) {
     console.error('提交失败', e)
+  } finally {
+    loading.value = false;
   }
 }
 
+/*------流程图组件------*/
+const showFlowChartModal = ref(false);
+
+const flowNodes = ref<Node[]>([
+  { id: '1', type: 'input', label: '开始', position: { x: 0, y: 150 } },
+  { id: '2', label: '录入问题', position: { x: 250, y: 150 } },
+  { id: '3', label: '部门经理审批', position: { x: 500, y: 150 } },
+  { id: '4', label: '分管领导审批', position: { x: 750, y: 150 } },
+]);
+
+const flowEdges = ref<Edge[]>([
+  { id: 'e1-2', source: '1', target: '2', type: 'smoothstep', sourceHandle: 'right', targetHandle: 'left'  },
+  { id: 'e2-3', source: '2', target: '3', type: 'smoothstep', label: '发起研判', sourceHandle: 'right', targetHandle: 'left'   },
+  { id: 'e3-4', source: '3', target: '4', type: 'smoothstep', label: '通过', sourceHandle: 'right', targetHandle: 'left'   },
+  // { id: 'e3-2', source: '3', target: '2', type: 'smoothstep', label: '退回', sourceHandle: 'top', targetHandle: 'top' },
+  // { id: 'e4-2', source: '4', target: '2', type: 'smoothstep', label: '退回', sourceHandle: 'top', targetHandle: 'top' },
+]);
+
+// 流程按钮类型
+interface ExtractedBtn {
+  nodeId: string,
+  nodeName: string,
+}
+
+const extractedBtnList = ref<ExtractedBtn[]>([])
+
+// 根据流程ID获取流程
+const getProcessByTaskId = async () => {
+  if(!route.query.taskId) return
+
+  const taskId = route.query.taskId
+
+  try {
+    const response = await getTaskHandleDetailByTaskId(taskId)
+
+    if (response.outcomeUserMap) {
+      const extractedData = Object.keys(response.outcomeUserMap).map(key => {
+        return {
+          nodeId: key,
+          nodeName: response.outcomeUserMap[key].nodeName
+        };
+      });
+
+      extractedBtnList.value = extractedData
+    }
+
+  } catch (e) {
+    console.error('获取流程按钮失败', e)
+  }
+}
 
 // --- 生命周期 ---
 onMounted(() => {
   getProblemDetailData();
+  getProcessByTaskId();
 });
 </script>
 

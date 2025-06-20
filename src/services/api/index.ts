@@ -10,3 +10,14 @@ export function getQuestionOrderTaskId(params: QuestionOrderTaskIdParams) {
     params
   });
 }
+
+// 根据taskId获取流程按钮
+export function getTaskHandleDetailByTaskId(taskId: string) {
+  return request<any> ({
+    url: '/restful/task/getTaskHandleDetailByTaskId',
+    method: 'get',
+    params: {
+      taskId
+    }
+  })
+}

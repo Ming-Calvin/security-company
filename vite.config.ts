@@ -72,7 +72,7 @@ export default defineConfig({
     port: 8080,
     proxy: {
       '/standard': {
-        target: 'http://192.168.21.68:9009',
+        target: 'http://192.168.21.68:9010',
         changeOrigin: true,
       }
     }

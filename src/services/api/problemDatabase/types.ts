@@ -1,4 +1,5 @@
 import type { PageResult } from '../types.ts'
+import { getProblemDetails } from '@/services/api/problemDatabase/index.ts'
 
 // 问题的数量统计
 export interface ProblemCountData {
@@ -174,4 +175,10 @@ export interface PendingListResponse {
   pageResult: PageResult;
   rows: PendingListItem[];
   total: number;
+}
+
+// 问题详情参数
+export interface ProblemDetailsParams {
+  id?: string;
+  procInstId?: string;
 }

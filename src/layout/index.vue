@@ -28,13 +28,16 @@ import AppMain from './components/AppMain.vue';
 }
 
 .el-header {
+  position: fixed;
+  z-index: 1000;
   padding: 0;
-  height: 50px; // 根据截图调整高度
+  width: 100%;
+  height: 50px;
   box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
 }
 
 .el-main {
   background-color: #f0f2f5;
-  padding: 20px;
+  padding: 70px 20px 20px 20px;
 }
 </style>
