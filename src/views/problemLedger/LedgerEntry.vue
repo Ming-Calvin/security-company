@@ -284,7 +284,7 @@ const handleDeptSelected = (selected: any[]) => {
   const selectedUser = selected[0];
   const { nameField, idField } = currentTargetProp.value
 
-  formData[nameField] = selectedUser.NAME_
+  formData[nameField] = selectedUser.FULLNAME_
   formData[idField] = selectedUser.ID_
 };
 

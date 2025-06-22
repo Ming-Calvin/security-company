@@ -8,8 +8,8 @@
         </div>
         <div class="header-actions">
           <el-button type="primary" :icon="Plus" @click="handleCreate">新建</el-button>
-<!--          <el-button :icon="Upload">导入</el-button>-->
-<!--          <el-button :icon="Position">批量提交</el-button>-->
+          <el-button :icon="Upload">导入</el-button>
+          <el-button :icon="Position">批量提交</el-button>
         </div>
       </div>
 

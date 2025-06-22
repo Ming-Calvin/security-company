@@ -14,10 +14,10 @@
                        :key="index"
                        @click="openApprovalModal(item.nodeId)"
             >
-              {{ item.nodeName }} {{ item.nodeId }}
+              {{ item.nodeName }}
             </el-button>
             <el-button type="primary" v-if="!route.query.taskId" @click="openApprovalModal('UserTask2')">提交研判</el-button>
-            <el-button>流转记录</el-button>
+<!--            <el-button>流转记录</el-button>-->
             <el-button @click="showFlowChartModal = true">流程图</el-button>
             <el-button>编辑</el-button>
             <el-button>删除</el-button>
@@ -222,7 +222,7 @@ const submit = async (submitData: { executors: { id: string, name: string }, opi
   if(route.query.taskId) {
     const DoNextParamExtObject =  {
       "nodeUsers": JSON.stringify([{nodeId: nodeId.value, executors: [{...submitData.executors}]}]),
-      "account": "liuzq",
+      "account": "admin",
       "taskId": route.query.taskId,
       "actionName": "agree",
       "opinion": submitData.opinion,
@@ -236,7 +236,7 @@ const submit = async (submitData: { executors: { id: string, name: string }, opi
     submitForm = { ...details.value , DoNextParamExtObject: DoNextParamExtObject }
   } else {
     const startFlowParamObject =  {
-      account: "liuzq",
+      account: "admin",
       defId: "2490000000310172",
       nodeUsers: JSON.stringify([{nodeId: 'UserTask2', executors: [{...submitData.executors}]}]),
       subject: "问题标题",

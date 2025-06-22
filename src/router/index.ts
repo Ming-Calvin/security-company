@@ -19,23 +19,35 @@ const router = createRouter({
       redirect: '/question-bank', // 重定向到首页
       children: [
         {
+          path: '/ledger-dashboard',
+          name: 'ledger-dashboard',
+          component: () => import('@/views/problemLedger/LedgerDashboard.vue'),
+          meta: { title: '台账视图', requiresAuth: true }
+        },
+        {
           path: '/problem-ledger',
           name: 'problem-ledger',
           component: () => import('../views/problemLedger/ProblemLedger.vue'),
-          meta: { title: '问题台账' }
+          meta: { title: '监督台账', requiresAuth: true }
         },
         {
           path: '/super-agency',
           name: 'super-agency',
           component: () => import('../views/superAgency/SuperAgency.vue'),
-          meta: { title: '关于' }
+          meta: { title: '监督待办', requiresAuth: true }
+        },
+        {
+          path: '/super-evaluation',
+          name: 'super-evaluation',
+          component: () => import('../views/superEvaluation/SuperEvaluation.vue'),
+          meta: { title: '监督评价', requiresAuth: true }
         },
         {
           path: '/question-bank',
           name: 'question-bank',
           component: () => import('../views/problemDatabase/QuestionBank.vue'),
-          meta: { title: '问题库' }
-        },
+          meta: { title: '问题库', requiresAuth: true }
+        }
       ]
     },
     {

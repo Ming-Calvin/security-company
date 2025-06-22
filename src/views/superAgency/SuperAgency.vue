@@ -18,8 +18,8 @@
     <el-col :span="20">
       <el-card shadow="never">
         <el-tabs v-model="activeTab" @tab-change="handleTabChange">
-          <el-tab-pane :label="'待办 (' + total + ')'" name="todo"></el-tab-pane>
-          <el-tab-pane label="已办 (0)" name="done"></el-tab-pane>
+          <el-tab-pane :label="'待办 (' + pendingTotal + ')'" name="todo"></el-tab-pane>
+          <el-tab-pane :label="'已办 (' + handledTotal + ')'" name="done"></el-tab-pane>
         </el-tabs>
 
         <div class="filter-bar">
@@ -101,8 +101,8 @@ import {
   Tickets,
   Setting
 } from '@element-plus/icons-vue';
-import { getPendingList } from '@/services/api/problemDatabase'
-import { useRouter } from 'vue-router'
+import { getPendingList, getHandledList } from '@/services/api/problemDatabase'
+import { useRoute, useRouter } from 'vue-router'
 
 // --- 类型定义 ---
 interface JudgmentItem {
@@ -127,7 +127,6 @@ const menuItems = ref([
 // 右侧内容区
 const activeTab = ref('todo');
 const loading = ref(false);
-const total = ref(0);
 const queryParams = reactive({
   keyword: '',
   date: null,
@@ -136,9 +135,29 @@ const queryParams = reactive({
   'Q^PROC_DEF_NAME_^SL': activeMenu.value
 });
 
-const tableData = ref<[]>([]);
-
 // --- 方法定义 ---
+
+const pendingList = ref([])
+const handledList = ref([])
+const pendingTotal = ref(0)
+const handledTotal = ref(0)
+const route = useRoute();
+
+const tableData = computed(() => {
+  if(activeTab.value == 'todo') {
+    return pendingList.value
+  } else if (activeTab.value == 'done') {
+    return handledList.value
+  }
+})
+
+const total = computed(() => {
+  if(activeTab.value == 'todo') {
+    return pendingTotal.value
+  } else if (activeTab.value == 'done') {
+    return handledTotal.value
+  }
+})
 
 // 获取问题列表
 const getList = async () => {
@@ -148,10 +167,10 @@ const getList = async () => {
     const response = await getPendingList(queryParams);
 
     if(response.code === 200) {
-      tableData.value = response.data.rows;
-      total.value = response.data.pageResult.totalCount;
+      pendingList.value = response.data.rows;
+      pendingTotal.value = response.data.pageResult.totalCount;
     } else {
-      console.error('获取列表失败')
+      console.error('获取待办列表失败')
     }
 
   } catch (e) {
@@ -160,6 +179,22 @@ const getList = async () => {
     loading.value = false
   }
 
+
+  try {
+    const response = await getHandledList(queryParams);
+
+    if(response.code === 200) {
+      handledList.value = response.data.rows;
+      handledTotal.value = response.data.pageResult.totalCount;
+    } else {
+      console.error('获取已办列表失败')
+    }
+
+  } catch (e) {
+    console.error('请求失败', e)
+  } finally {
+    loading.value = false
+  }
 }
 
 const handleMenuClick = (key: string) => {
@@ -183,8 +218,16 @@ const resetQuery = () => {
 
 // 办理
 const handleApprove = (row: JudgmentItem) => {
+  let routeName = ''
+
+  if(activeMenu.value === '问题研判') {
+    routeName = 'problem-detail';
+  } else if(activeMenu.value === '监督台账') {
+    routeName = 'ledger-detail';
+  }
+
   router.push({
-    name: 'problem-detail',
+    name: routeName,
     query: { procInstId: row.procInstId, taskId: row.id, nodeId: row.nodeId }
   });
 }
@@ -221,7 +264,11 @@ const getStepClass = (status: string) => {
 
 
 onMounted(() => {
-  getList();
+  if(route.query.activeMenu) {
+    handleMenuClick(route.query.activeMenu)
+  } else {
+    getList();
+  }
 });
 </script>
 

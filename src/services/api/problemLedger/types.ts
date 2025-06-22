@@ -192,3 +192,45 @@ export interface EvaluationPayload {
   fEvaluateScore: number;
   fEvaluateContent: string;
 }
+
+// 下一环节类型
+export interface DoNextParam {
+  nodeUsers: string;
+  account: string;
+  taskId: string;
+  actionName: string;
+  opinion: string;
+  formType: string;
+  jumpType: string;
+  destination: string;
+  opinionFiles: string[];
+  formName: string;
+}
+
+// 人员数组类型
+export interface NodeUser {
+  nodeId: string;
+  executors: Executor[];
+}
+
+// 执行者类型
+export interface Executor {
+  id: string;
+  type: 'user';
+  name: string;
+}
+
+// 起始环节类型
+export interface startFlowParamObject {
+  account: string;
+  nodeUsers: string;
+  defId: string;
+  subject: string,
+  destination: string;
+  formName: string;
+}
+
+// 流程开始类型
+export interface ProblemDetailWithStartFlow extends LedgerFormData {
+  startFlowParamObject: startFlowParamObject;
+}

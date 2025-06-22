@@ -7,7 +7,8 @@ import type {
   ProgressUpdatePayload,
   RectProcessListParams,
   RectProcessListResult,
-  EvaluationPayload
+  EvaluationPayload,
+  ProblemDetailWithStartFlow
 } from '@/services/api/problemLedger/types.ts'
 import type { ApiResponse } from '@/services/api/types.ts'
 
@@ -83,5 +84,14 @@ export function submitEvaluation(data: EvaluationPayload) {
     url: '/core/rectEvaluation/rectEvaluation/save',
     method: 'post',
     data,
+  });
+}
+
+// 发起接口
+export function rectificationBookCommit(data: ProblemDetailWithStartFlow) {
+  return request<ApiResponse<any>>({
+    url: '/core/rectificationBook/rectificationBook/commit',
+    method: 'post',
+    data
   });
 }

@@ -9,9 +9,17 @@
             </template>
           </el-page-header>
           <div class="header-actions">
+            <el-button v-for="(item, index) in extractedBtnList"
+                       type="primary"
+                       :key="index"
+                       @click="openApprovalModal(item.nodeId)"
+            >
+              {{ item.nodeName }}
+            </el-button>
+            <el-button type="primary" v-if="!route.query.taskId" @click="openApprovalModal('UserTask2')">提交</el-button>
             <el-button type="primary" @click="openUpdateDialog()">更新进展</el-button>
             <el-button type="primary" @click="openEvaluationModal()">纪委评价</el-button>
-            <el-button>流转记录</el-button>
+<!--            <el-button>流转记录</el-button>-->
             <el-button @click="isFlowModalVisible = true">流程图</el-button>
             <el-button>编辑</el-button>
             <el-button>删除</el-button>
@@ -166,6 +174,13 @@
     @success="handleEvaluationSuccess"
   />
 
+  <SubmitComponent
+    ref="submitComponent"
+    v-if="isApprovalModalVisible"
+    v-model="isApprovalModalVisible"
+    @confirm="handleModalConfirm"
+  />
+
   <FlowChartModal
     v-if="isFlowModalVisible"
     v-model="isFlowModalVisible"
@@ -182,8 +197,10 @@ import { InfoFilled, SuccessFilled, Document, Download, WarningFilled } from '@e
 import {
   getRectEvaluationList,
   getRectificationRecordById,
-  getRectProcessList
+  getRectProcessList,
+  rectificationBookCommit
 } from '@/services/api/problemLedger'
+import { getTaskHandleDetailByTaskId } from '@/services/api'
 
 // 更新进展组件
 import UpdateProgressModal from './UpdateProgressModal.vue';
@@ -193,11 +210,13 @@ import EvaluationModal from './EvaluationModal.vue';
 
 import FlowChartModal from '@/components/FlowChartModal.vue';
 import type { Node, Edge } from '@vue-flow/core';
+import SubmitComponent from '@/views/problemDatabase/submitComponent.vue'
 
 // 更新进展列表
 const progressList = ref([])
 // 评价列表
 const evaluationList = ref([])
+
 
 // --- 类型定义 ---
 interface Attachment {
@@ -389,11 +408,110 @@ const complexEdges = ref<Edge[]>([
   // { id: 'e-supervise-leader-back', source: 'supervise_leader_eval', target: 'supervise_dept_eval', type: 'smoothstep', label: '退回上一步', sourceHandle: 'bottom', targetHandle: 'bottom' },
 ]);
 
+
+/*------提交------*/
+
+const isApprovalModalVisible = ref(false);
+// 提交组件
+const submitComponent = ref<InstaneType<typeof SubmitComponent> | null>(null)
+
+const nodeId = ref('')
+
+// 打开弹窗
+const openApprovalModal = (id?: string) => {
+  isApprovalModalVisible.value = true;
+  submitComponent.value?.init(id);
+  nodeId.value = id
+};
+
+const handleModalConfirm = (submitData: { executors: { id: string, name: string }, opinion: string }) => {
+  submit(submitData)
+};
+
+// 提交研判
+const submit = async (submitData: { executors: { id: string, name: string }, opinion: string }) => {
+  // 提交数据
+  let submitForm = {}
+
+  if(route.query.taskId) {
+    const DoNextParamExtObject =  {
+      "nodeUsers": JSON.stringify([{nodeId: nodeId.value, executors: [{...submitData.executors}]}]),
+      "account": "admin",
+      "taskId": route.query.taskId,
+      "actionName": "agree",
+      "opinion": submitData.opinion,
+      "formType": "inner",
+      "jumpType": "select",
+      "destination": nodeId.value,
+      "opinionFiles": [],
+      "formName": ""
+    }
+
+    submitForm = { ...details.value , DoNextParamExtObject: DoNextParamExtObject }
+  } else {
+    const startFlowParamObject =  {
+      account: "admin",
+      defId: "2490000000690023",
+      nodeUsers: JSON.stringify([{nodeId: 'UserTask2', executors: [{...submitData.executors}]}]),
+      subject: "问题标题",
+      destination: 'UserTask2',
+      formName: "【提交工单】"
+    }
+
+    submitForm = { ...details.value , startFlowParamObject: startFlowParamObject }
+  }
+
+  try {
+    loading.value = true
+    const response = await rectificationBookCommit(submitForm)
+
+    if(response.code === 200) {
+      ElMessage.success('提交成功');
+      router.push({ name: 'super-agency', query: { activeMenu: '监督台账' } });
+    } else {
+      ElMessage.error('保存失败');
+    }
+  } catch (e) {
+    console.error('提交失败', e)
+  } finally {
+    loading.value = false;
+  }
+}
+
+
+const extractedBtnList = ref<ExtractedBtn[]>([])
+
+// 根据流程ID获取流程
+const getProcessByTaskId = async () => {
+  if(!route.query.taskId) return
+
+  const taskId = route.query.taskId
+
+  try {
+    const response = await getTaskHandleDetailByTaskId(taskId)
+
+    if (response.outcomeUserMap) {
+      const extractedData = Object.keys(response.outcomeUserMap).map(key => {
+        return {
+          nodeId: key,
+          nodeName: response.outcomeUserMap[key].nodeName
+        };
+      });
+
+      extractedBtnList.value = extractedData
+    }
+
+  } catch (e) {
+    console.error('获取流程按钮失败', e)
+  }
+}
+
 // --- 生命周期 ---
 onMounted(() => {
   getLedgerDetailData();
   getRectProcessData();
   getRectEvaluationData();
+  getProcessByTaskId();
 });
 </script>
 

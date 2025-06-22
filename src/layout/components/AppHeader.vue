@@ -8,14 +8,19 @@
       active-text-color="#3776f0"
       :router="true"
     >
-      <el-menu-item index="/problem-ledger">
+      <el-menu-item index="/ledger-dashboard">
         <el-icon><Menu /></el-icon>
-        <span>问题台账</span>
+        <span>监督台账</span>
       </el-menu-item>
 
       <el-menu-item index="/super-agency">
         <el-icon><Histogram /></el-icon>
-        <span>监督代办</span>
+        <span>监督待办</span>
+      </el-menu-item>
+
+      <el-menu-item index="/super-evaluation">
+        <el-icon><Comment /></el-icon>
+        <span>监督评价</span>
       </el-menu-item>
 
       <el-menu-item index="/question-bank">

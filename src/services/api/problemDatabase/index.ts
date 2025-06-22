@@ -101,9 +101,19 @@ export function problemWarehouseCommit(data: ProblemDetailWithStartFlow) {
   });
 }
 
+// 待办接口
 export function getPendingList(params: PendingListParams) {
   return request<ApiResponse<PendingListResponse>>({
     url: '/office/receivedProcess/pendingJsonNew',
+    method: 'get',
+    params,
+  });
+}
+
+// 待办接口
+export function getHandledList(params: PendingListParams) {
+  return request<ApiResponse<PendingListResponse>>({
+    url: '/office/receivedProcess/handledJsonNew',
     method: 'get',
     params,
   });

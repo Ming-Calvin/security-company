@@ -337,10 +337,10 @@ const handleDeptSelected = (selected: any[]) => {
   const target = currentTargetProp.value;
 
   if (target === 'fInspectionDept') {
-    formData.fInspectionDept = selectedUser.NAME_;
+    formData.fInspectionDept = selectedUser.FULLNAME_;
     formData.fInspectionDeptId = selectedUser.CODE_;
   } else if (target === 'fDeptSubjectInspection') {
-    formData.fDeptSubjectInspection = selectedUser.NAME_;
+    formData.fDeptSubjectInspection = selectedUser.FULLNAME_;
     formData.fDeptSubjectInspectionId = selectedUser.CODE_;
   }
 };
