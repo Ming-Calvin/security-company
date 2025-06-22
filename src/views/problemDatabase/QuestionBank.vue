@@ -1,88 +1,90 @@
 <template>
   <div class="question-bank-container">
-    <el-card shadow="never">
-      <div class="page-header">
-        <div class="header-title">
-          <el-icon :size="20" color="#409eff"><QuestionFilled /></el-icon>
-          <span class="title-text">问题库</span>
-        </div>
-        <div class="header-actions">
-          <el-button type="primary" :icon="Plus" @click="handleCreate">新建</el-button>
-          <el-button :icon="Upload">导入</el-button>
-          <el-button :icon="Position">批量提交</el-button>
-        </div>
+    <el-card shadow="never" class="filter-container">
+      <div class="action-bar">
+        <el-button type="primary" :icon="Plus" @click="handleCreate">新建</el-button>
+        <el-button :icon="Upload">导入</el-button>
+        <el-button :icon="Position">批量提交</el-button>
+        <el-button link type="primary" @click="toggleFilterArea">
+          {{ isFilterExpanded ? '收起筛选' : '展开筛选' }}
+          <el-icon class="el-icon--right">
+            <ArrowUp v-if="isFilterExpanded" />
+            <ArrowDown v-else />
+          </el-icon>
+        </el-button>
       </div>
 
-      <el-divider />
+      <el-tabs v-model="activeStatus" class="filter-tabs" @tab-change="handleTabChange">
+        <el-tab-pane
+          v-for="tab in tabs"
+          :key="tab.name"
+          :label="`${tab.label} (${tab.count})`"
+          :name="tab.name"
+        ></el-tab-pane>
+      </el-tabs>
 
-      <div class="filter-container">
-        <el-tabs v-model="activeStatus" class="filter-tabs" @tab-change="handleTabChange">
-          <el-tab-pane
-            v-for="tab in tabs"
-            :key="tab.name"
-            :label="`${tab.label} (${tab.count})`"
-            :name="tab.name"
-          ></el-tab-pane>
-        </el-tabs>
+      <el-collapse-transition>
+        <div v-show="isFilterExpanded" class="filter-form-wrapper">
 
-        <div class="filter-form-area">
-          <el-form ref="queryFormRef" :model="queryParams" label-width="80px">
-            <el-row :gutter="20">
-              <el-col :span="8">
-                <el-form-item label="关键字" prop="keyword">
-                  <el-input v-model="queryParams.keyword" placeholder="请输入问题关键字" clearable />
-                </el-form-item>
-              </el-col>
-              <el-col :span="8">
-                <el-form-item label="问题类型" prop="problemType">
-                  <el-select v-model="queryParams.problemType" placeholder="请选择问题类型" clearable style="width: 100%;">
-                    <el-option label="组织监督" value="组织监督" />
-                    <el-option label="民主监督" value="民主监督" />
-                  </el-select>
-                </el-form-item>
-              </el-col>
-              <el-col :span="8">
-                <el-form-item label="问题来源" prop="problemSource">
-                  <el-select v-model="queryParams.problemSource" placeholder="请选择问题来源" clearable style="width: 100%;">
-                    <el-option label="打工人必看" value="打工人必看" />
-                  </el-select>
-                </el-form-item>
-              </el-col>
+          <div class="filter-form-area">
+            <el-form ref="queryFormRef" :model="queryParams" label-width="80px">
+              <el-row :gutter="20">
+                <el-col :span="8">
+                  <el-form-item label="关键字" prop="keyword">
+                    <el-input v-model="queryParams.keyword" placeholder="请输入问题关键字" clearable />
+                  </el-form-item>
+                </el-col>
+                <el-col :span="8">
+                  <el-form-item label="问题类型" prop="problemType">
+                    <el-select v-model="queryParams.problemType" placeholder="请选择问题类型" clearable style="width: 100%;">
+                      <el-option label="组织监督" value="组织监督" />
+                      <el-option label="民主监督" value="民主监督" />
+                    </el-select>
+                  </el-form-item>
+                </el-col>
+                <el-col :span="8">
+                  <el-form-item label="问题来源" prop="problemSource">
+                    <el-select v-model="queryParams.problemSource" placeholder="请选择问题来源" clearable style="width: 100%;">
+                      <el-option label="打工人必看" value="打工人必看" />
+                    </el-select>
+                  </el-form-item>
+                </el-col>
 
-              <el-col :span="8">
-                <el-form-item label="检查部门" prop="Q^pw.F_INSPECTION_DEPT^SL">
-                  <el-input v-model="queryParams['Q^pw.F_INSPECTION_DEPT^SL']" placeholder="请输入检查部门" clearable />
-                </el-form-item>
-              </el-col>
-              <el-col :span="8">
-                <el-form-item label="被查部门" prop="Q^pw.F_DEPT_SUBJECT_INSPECTION^SL">
-                  <el-input v-model="queryParams['Q^pw.F_DEPT_SUBJECT_INSPECTION^SL']" placeholder="请输入被检查部门" clearable />
-                </el-form-item>
-              </el-col>
-              <el-col :span="8">
-                <el-form-item label="录入时间" prop="Q^pw.F_ENTRY_TIME^DL">
-                  <el-date-picker
-                    v-model="queryParams.entryTimeRange"
-                    type="daterange"
-                    range-separator="至"
-                    start-placeholder="开始日期"
-                    end-placeholder="结束日期"
-                    style="width: 100%;"
-                  />
-                </el-form-item>
-              </el-col>
-            </el-row>
+                <el-col :span="8">
+                  <el-form-item label="检查部门" prop="Q^pw.F_INSPECTION_DEPT^SL">
+                    <el-input v-model="queryParams['Q^pw.F_INSPECTION_DEPT^SL']" placeholder="请输入检查部门" clearable />
+                  </el-form-item>
+                </el-col>
+                <el-col :span="8">
+                  <el-form-item label="被查部门" prop="Q^pw.F_DEPT_SUBJECT_INSPECTION^SL">
+                    <el-input v-model="queryParams['Q^pw.F_DEPT_SUBJECT_INSPECTION^SL']" placeholder="请输入被检查部门" clearable />
+                  </el-form-item>
+                </el-col>
+                <el-col :span="8">
+                  <el-form-item label="录入时间" prop="Q^pw.F_ENTRY_TIME^DL">
+                    <el-date-picker
+                      v-model="queryParams.entryTimeRange"
+                      type="daterange"
+                      range-separator="至"
+                      start-placeholder="开始日期"
+                      end-placeholder="结束日期"
+                      style="width: 100%;"
+                    />
+                  </el-form-item>
+                </el-col>
+              </el-row>
 
-            <el-row>
-              <el-col :span="24" class="form-buttons">
-                <el-button type="primary" :icon="Search" @click="handleQuery">搜索</el-button>
-                <el-button :icon="Refresh" @click="resetQuery">重置</el-button>
-<!--                <el-button :icon="Setting" circle class="ml-2" />-->
-              </el-col>
-            </el-row>
-          </el-form>
+              <el-row>
+                <el-col :span="24" class="form-buttons">
+                  <el-button type="primary" :icon="Search" @click="handleQuery">搜索</el-button>
+                  <el-button :icon="Refresh" @click="resetQuery">重置</el-button>
+                  <!--                <el-button :icon="Setting" circle class="ml-2" />-->
+                </el-col>
+              </el-row>
+            </el-form>
+          </div>
         </div>
-      </div>
+      </el-collapse-transition>
 
     </el-card>
 
@@ -134,7 +136,7 @@
                 </el-button>
                 <template #dropdown>
                   <el-dropdown-menu>
-<!--                    <el-dropdown-item @click="handleEdit(scope.row)">编辑</el-dropdown-item>-->
+                    <el-dropdown-item @click="handleEdit(scope.row)">编辑</el-dropdown-item>
                     <el-dropdown-item v-if="scope.row.status != ''" @click="handleDelete(scope.row)" style="color: red;">删除</el-dropdown-item>
                   </el-dropdown-menu>
                 </template>
@@ -192,6 +194,12 @@ const tabs = ref<Tab[]>([
   { label: '审核中', name: '2', count: 0, apiKey: 'runningCount' },
   { label: '已审慎', name: '3', count: 0, apiKey: 'endCount' },
 ]);
+
+const isFilterExpanded = ref(false)
+
+const toggleFilterArea = () => {
+  isFilterExpanded.value = !isFilterExpanded.value;
+};
 
 // 获取问题数量
 const getProblemCountFun = async () => {
@@ -356,13 +364,7 @@ const handleSubmit = (row: ProblemItem) => {
 
 // 筛选区域布局样式
 .filter-container {
-  .filter-tabs {
-    flex-shrink: 0;
-    // 调整 tabs 下方边框，使其与右侧表单区域视觉上更协调
-    :deep(.el-tabs__nav-wrap::after) {
-      height: 1px;
-    }
-  }
+  position: relative;
 
   .filter-form-area {
     margin-top: 20px;
@@ -391,5 +393,14 @@ const handleSubmit = (row: ProblemItem) => {
 
 .el-button.is-link {
   padding: 0px;
+}
+
+.action-bar {
+  text-align: right;
+  padding: 16px 20px;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 100;
 }
 </style>

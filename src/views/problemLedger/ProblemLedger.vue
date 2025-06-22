@@ -1,6 +1,6 @@
 <template>
   <el-row :gutter="20">
-    <el-col :span="4">
+    <el-col :span="3">
       <div class="left-menu-container">
         <div class="menu-title">常用台账</div>
         <ul class="menu-list">
@@ -18,12 +18,19 @@
       </div>
     </el-col>
 
-    <el-col :span="20">
+    <el-col :span="21">
       <el-card shadow="never" class="main-content-card">
         <div class="action-bar">
           <el-button type="primary" :icon="Plus" @click="handleCreate">新建台账</el-button>
           <el-button>取消记录监督</el-button>
           <el-button>加入集团台账</el-button>
+          <el-button link type="primary" @click="toggleFilterArea">
+            {{ isFilterExpanded ? '收起筛选' : '展开筛选' }}
+            <el-icon class="el-icon--right">
+              <ArrowUp v-if="isFilterExpanded" />
+              <ArrowDown v-else />
+            </el-icon>
+          </el-button>
         </div>
 
         <div class="content-header">
@@ -37,64 +44,68 @@
           </el-tabs>
         </div>
 
-        <div class="filter-form-area">
-          <el-form ref="queryFormRef" :model="queryParams" label-width="80px">
-            <el-row :gutter="20">
-              <el-col :span="8">
-                <el-form-item label="监督事项" prop="fSuperviseItems">
-                  <el-input v-model="queryParams.fSuperviseItems" placeholder="监督事项搜索" clearable />
-                </el-form-item>
-              </el-col>
-              <el-col :span="8">
-                <el-form-item label="监督类型" prop="fSuperviseType">
-                  <el-select v-model="queryParams.fSuperviseType" placeholder="请选择监督类型" clearable style="width: 100%;">
-                    <el-option label="组织监督" value="组织监督" />
-                    <el-option label="民主监督" value="民主监督" />
-                  </el-select>
-                </el-form-item>
-              </el-col>
-              <el-col :span="8">
-                <el-form-item label="监督来源" prop="fSuperviseSource">
-                  <el-select v-model="queryParams.fSuperviseSource" placeholder="请选择监督来源" clearable style="width: 100%;">
-                    <el-option label="打工人必看" value="打工人必看" />
-                  </el-select>
-                </el-form-item>
-              </el-col>
+        <el-collapse-transition>
+          <div v-show="isFilterExpanded" class="filter-form-wrapper">
+            <div class="filter-form-area">
+              <el-form ref="queryFormRef" :model="queryParams" label-width="80px">
+                <el-row :gutter="20">
+                  <el-col :span="8">
+                    <el-form-item label="监督事项" prop="fSuperviseItems">
+                      <el-input v-model="queryParams.fSuperviseItems" placeholder="监督事项搜索" clearable />
+                    </el-form-item>
+                  </el-col>
+                  <el-col :span="8">
+                    <el-form-item label="监督类型" prop="fSuperviseType">
+                      <el-select v-model="queryParams.fSuperviseType" placeholder="请选择监督类型" clearable style="width: 100%;">
+                        <el-option label="组织监督" value="组织监督" />
+                        <el-option label="民主监督" value="民主监督" />
+                      </el-select>
+                    </el-form-item>
+                  </el-col>
+                  <el-col :span="8">
+                    <el-form-item label="监督来源" prop="fSuperviseSource">
+                      <el-select v-model="queryParams.fSuperviseSource" placeholder="请选择监督来源" clearable style="width: 100%;">
+                        <el-option label="打工人必看" value="打工人必看" />
+                      </el-select>
+                    </el-form-item>
+                  </el-col>
 
-              <el-col :span="8">
-                <el-form-item label="责任部门" prop="fRectifyDept">
-                  <el-input v-model="queryParams.fRectifyDept" placeholder="请输入责任部门" clearable />
-                </el-form-item>
-              </el-col>
-              <el-col :span="8">
-                <el-form-item label="监督部门" prop="fSuperviseDept">
-                  <el-input v-model="queryParams.fSuperviseDept" placeholder="请输入监督部门" clearable />
-                </el-form-item>
-              </el-col>
-              <el-col :span="8">
-                <el-form-item label="录入时间" prop="entryTimeRange">
-                  <el-date-picker
-                    v-model="queryParams.entryTimeRange"
-                    type="daterange"
-                    range-separator="至"
-                    start-placeholder="开始日期"
-                    end-placeholder="结束日期"
-                    value-format="YYYY-MM-DD"
-                    style="width: 100%;"
-                  />
-                </el-form-item>
-              </el-col>
-            </el-row>
+                  <el-col :span="8">
+                    <el-form-item label="责任部门" prop="fRectifyDept">
+                      <el-input v-model="queryParams.fRectifyDept" placeholder="请输入责任部门" clearable />
+                    </el-form-item>
+                  </el-col>
+                  <el-col :span="8">
+                    <el-form-item label="监督部门" prop="fSuperviseDept">
+                      <el-input v-model="queryParams.fSuperviseDept" placeholder="请输入监督部门" clearable />
+                    </el-form-item>
+                  </el-col>
+                  <el-col :span="8">
+                    <el-form-item label="录入时间" prop="entryTimeRange">
+                      <el-date-picker
+                        v-model="queryParams.entryTimeRange"
+                        type="daterange"
+                        range-separator="至"
+                        start-placeholder="开始日期"
+                        end-placeholder="结束日期"
+                        value-format="YYYY-MM-DD"
+                        style="width: 100%;"
+                      />
+                    </el-form-item>
+                  </el-col>
+                </el-row>
 
-            <el-row>
-              <el-col :span="24" class="form-buttons">
-                <el-button type="primary" :icon="Search" @click="handleQuery">搜索</el-button>
-                <el-button :icon="Refresh" @click="resetQuery">重置</el-button>
-                <el-button :icon="Setting" circle class="ml-2" />
-              </el-col>
-            </el-row>
-          </el-form>
-        </div>
+                <el-row>
+                  <el-col :span="24" class="form-buttons">
+                    <el-button type="primary" :icon="Search" @click="handleQuery">搜索</el-button>
+                    <el-button :icon="Refresh" @click="resetQuery">重置</el-button>
+                    <el-button :icon="Setting" circle class="ml-2" />
+                  </el-col>
+                </el-row>
+              </el-form>
+            </div>
+          </div>
+        </el-collapse-transition>
       </el-card>
 
       <el-card shadow="never">
@@ -189,7 +200,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import type { FormInstance } from 'element-plus';
-import { Plus, Upload, Position, Menu, Setting } from '@element-plus/icons-vue';
+import { Plus, Upload, Position, Menu, Setting, ArrowDown } from '@element-plus/icons-vue'
 import { getRectificationList } from '@/services/api/problemLedger'
 import { useRouter } from 'vue-router'
 
@@ -234,6 +245,11 @@ const queryParams = reactive({
   entryTimeRange: [], // 开始时间，结束时间
 });
 
+const isFilterExpanded = ref(false)
+
+const toggleFilterArea = () => {
+  isFilterExpanded.value = !isFilterExpanded.value;
+};
 
 // --- 事件处理函数 (目前为占位符) ---
 const handleMenuClick = (menuKey: string) => {

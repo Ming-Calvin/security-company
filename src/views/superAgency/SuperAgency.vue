@@ -1,6 +1,6 @@
 <template>
   <el-row :gutter="20">
-    <el-col :span="4">
+    <el-col :span="3">
       <div class="side-menu">
         <div
           v-for="item in menuItems"
@@ -15,7 +15,7 @@
       </div>
     </el-col>
 
-    <el-col :span="20">
+    <el-col :span="21">
       <el-card shadow="never">
         <el-tabs v-model="activeTab" @tab-change="handleTabChange">
           <el-tab-pane :label="'待办 (' + pendingTotal + ')'" name="todo"></el-tab-pane>
@@ -324,7 +324,7 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 0;
+  padding: 10px 0;
 }
 
 .filter-inputs {

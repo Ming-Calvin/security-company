@@ -16,7 +16,7 @@ const router = createRouter({
     {
       path: '/',
       component: Layout,
-      redirect: '/question-bank', // 重定向到首页
+      redirect: '/ledger-dashboard', // 重定向到首页
       children: [
         {
           path: '/ledger-dashboard',
