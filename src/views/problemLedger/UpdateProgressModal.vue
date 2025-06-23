@@ -44,8 +44,8 @@
 import { ref, reactive } from 'vue';
 import type { FormInstance, FormRules } from 'element-plus';
 import { ElMessage } from 'element-plus';
-import { updateRectProcess } from '@/services/api/problemLedger/index.ts';
-import type { ProgressUpdatePayload } from '@/services/api/problemLedger/types.ts';
+import { updateRectProcess } from '@/api/problemLedger.ts';
+import type { ProgressUpdatePayload } from '@/types/problemLedger.ts';
 
 // 上传组件
 import type { UploadUserFile } from 'element-plus';

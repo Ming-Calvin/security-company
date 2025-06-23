@@ -1,6 +1,6 @@
 import request from '@/services/request.ts';
 // 通用类型
-import type { ApiResponse, QuestionOrderTaskIdParams, QuestionOrderTaskIdResult } from '@/services/api/types.ts'
+import type { ApiResponse, QuestionOrderTaskIdParams, QuestionOrderTaskIdResult } from '@/types/base.ts'
 
 // 根据任务Id获取TaskId
 export function getQuestionOrderTaskId(params: QuestionOrderTaskIdParams) {

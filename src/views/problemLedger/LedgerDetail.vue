@@ -199,18 +199,18 @@ import {
   getRectificationRecordById,
   getRectProcessList,
   rectificationBookCommit
-} from '@/services/api/problemLedger'
-import { getTaskHandleDetailByTaskId } from '@/services/api'
+} from '@/api/problemLedger.ts'
+import { getTaskHandleDetailByTaskId } from '@/api/base.ts'
 
 // 更新进展组件
 import UpdateProgressModal from './UpdateProgressModal.vue';
 // 评价组件
 import EvaluationModal from './EvaluationModal.vue';
-// import type { RectProcessListParams } from '@/services/api/problemLedger/types.ts'
+// import type { RectProcessListParams } from '@/services/api/problemLedger/problemDatabase.ts'
 
 import FlowChartModal from '@/components/FlowChartModal.vue';
 import type { Node, Edge } from '@vue-flow/core';
-import SubmitComponent from '@/views/problemDatabase/submitComponent.vue'
+import SubmitComponent from '@/views/problemDatabase/SubmitComponent.vue'
 
 // 更新进展列表
 const progressList = ref([])

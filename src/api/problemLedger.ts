@@ -1,4 +1,4 @@
-import request from '../../request.ts';
+import request from '../services/request.ts';
 import type {
   LedgerFormData,
   LedgerListParams,
@@ -9,8 +9,8 @@ import type {
   RectProcessListResult,
   EvaluationPayload,
   ProblemDetailWithStartFlow
-} from '@/services/api/problemLedger/types.ts'
-import type { ApiResponse } from '@/services/api/types.ts'
+} from '@/types/problemLedger.ts'
+import type { ApiResponse } from '@/types/base.ts'
 
 
 export function getRectificationList(params: LedgerListParams) {

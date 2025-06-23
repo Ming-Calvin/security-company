@@ -1,4 +1,4 @@
-import request from '../../request.ts';
+import request from '../services/request.ts';
 // 通用api类型
 import type {
   ApiResponse,
@@ -6,7 +6,7 @@ import type {
   PeopleSelectTreeResult,
   PeopleSelectUserParams,
   PeopleSelectUserTable
-} from '../types.ts'
+} from '../types/base.ts'
 
 // 问题库类型
 import type {
@@ -18,13 +18,13 @@ import type {
   ProblemDetailWithStartFlow,
   PendingListResponse,
   PendingListParams, ProblemDetailsParams
-} from './types.ts'
+} from '../types/problemDatabase.ts'
 
 import qs from 'qs'
 
 // 问题数量统计
 export function getProblemCount() {
-  return request<ApiResponse<ProblemCountData>>({
+  return request<ProblemCountData>({
     url: '/core/problemWarehouse/problemWarehouse/getProblemCount',
     method: 'get'
   });
@@ -37,6 +37,17 @@ export function getProblemList(params: ProblemListParams) {
     method: 'post',
     params,
   });
+}
+
+// 问题列表删除问题
+export function problemWarehouseRemove(id: string) {
+  return request<string>({
+    url: '/core/problemWarehouse/problemWarehouse/remove',
+    method: 'get',
+    params: {
+      id
+    }
+  })
 }
 
 // 保存问题

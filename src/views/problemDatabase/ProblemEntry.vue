@@ -184,12 +184,12 @@ import { ElMessage } from 'element-plus';
 import { Plus, Link } from '@element-plus/icons-vue';
 
 // 接口
-import { getTreeList, getUserTable, saveProblem } from '@/services/api/problemDatabase'
-import type { ProblemSavePayload } from '@/services/api/problemDatabase/types.ts'
+import { getTreeList, getUserTable, saveProblem } from '@/api/problemDatabase.ts'
+import type { ProblemSavePayload } from '@/types/problemDatabase.ts'
 
 // 人员选择器
 import PeopeleSelect from '@/components/PeopeleSelect.vue';
-import type { PeopleSelectUserTable } from '@/services/api/types.ts'
+import type { PeopleSelectUserTable } from '@/types/base.ts'
 
 // 上传组件
 import type { UploadUserFile } from 'element-plus';

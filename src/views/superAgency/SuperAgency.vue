@@ -101,7 +101,7 @@ import {
   Tickets,
   Setting
 } from '@element-plus/icons-vue';
-import { getPendingList, getHandledList } from '@/services/api/problemDatabase'
+import { getPendingList, getHandledList } from '@/api/problemDatabase.ts'
 import { useRoute, useRouter } from 'vue-router'
 
 // --- 类型定义 ---

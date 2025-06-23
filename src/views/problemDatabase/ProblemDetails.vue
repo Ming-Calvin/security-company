@@ -104,13 +104,13 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { Link, Document } from '@element-plus/icons-vue';
-import type { ProblemDetail } from '@/services/api/problemDatabase/types.ts'
-import { getProblemDetails, problemWarehouseCommit } from '@/services/api/problemDatabase'
-import SubmitComponent from '@/views/problemDatabase/submitComponent.vue'
+import type { ProblemDetail } from '@/types/problemDatabase.ts'
+import { getProblemDetails, problemWarehouseCommit } from '@/api/problemDatabase'
+import SubmitComponent from '@/views/problemDatabase/SubmitComponent.vue'
 import FlowChartModal from '@/components/FlowChartModal.vue'
 import type { Node, Edge, Position } from '@vue-flow/core';
 import { ElMessage } from 'element-plus'
-import { getTaskHandleDetailByTaskId } from '@/services/api'
+import { getTaskHandleDetailByTaskId } from '@/api/base.ts'
 import PeopeleSelect from '@/components/PeopeleSelect.vue'
 
 

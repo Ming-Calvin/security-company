@@ -43,8 +43,8 @@
 import { ref, reactive } from 'vue';
 import type { FormInstance, FormRules } from 'element-plus';
 import { ElMessage } from 'element-plus';
-import { submitEvaluation } from '@/services/api/problemLedger/index.ts';
-import type { EvaluationPayload } from '@/services/api/problemLedger/types.ts';
+import { submitEvaluation } from '@/api/problemLedger.ts';
+import type { EvaluationPayload } from '@/types/problemLedger.ts';
 
 // --- Props & Emits ---
 const props = defineProps({

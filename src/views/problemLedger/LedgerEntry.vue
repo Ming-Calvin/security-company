@@ -140,9 +140,9 @@ import { useRouter } from 'vue-router';
 import type { FormInstance, FormRules } from 'element-plus';
 import { ElMessage } from 'element-plus';
 import { Plus, Link, InfoFilled } from '@element-plus/icons-vue';
-import { saveLedger, type LedgerFormData } from '@/services/api/problemLedger/index.ts';
+import { saveLedger, type LedgerFormData } from '@/api/problemLedger.ts';
 // 接口
-import { getTreeList, getUserTable } from '@/services/api/problemDatabase'
+import { getTreeList, getUserTable } from '@/api/problemDatabase.ts'
 
 // 人员选择器
 import PeopeleSelect from '@/components/PeopeleSelect.vue';

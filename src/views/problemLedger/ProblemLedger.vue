@@ -201,7 +201,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import type { FormInstance } from 'element-plus';
 import { Plus, Upload, Position, Menu, Setting, ArrowDown } from '@element-plus/icons-vue'
-import { getRectificationList } from '@/services/api/problemLedger'
+import { getRectificationList } from '@/api/problemLedger.ts'
 import { useRouter } from 'vue-router'
 
 const router = useRouter();

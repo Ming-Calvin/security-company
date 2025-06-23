@@ -1,4 +1,4 @@
-// src/router/index.ts
+// src/router/problemDatabase.ts
 
 import { createRouter, createWebHistory } from 'vue-router';
 // import stores from '@/stores';

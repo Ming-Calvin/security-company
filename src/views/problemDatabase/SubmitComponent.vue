@@ -52,8 +52,8 @@ import { Plus } from '@element-plus/icons-vue';
 
 // 人员选择器组件和相关类型/API
 import PeopeleSelect from '@/components/PeopeleSelect.vue';
-import type { PeopleSelectUserTable, User } from '@/services/api/types.ts';
-import { getTreeList, getUserTable } from '@/services/api/problemDatabase';
+import type { PeopleSelectUserTable, User } from '@/types/base.ts';
+import { getTreeList, getUserTable } from '@/api/problemDatabase.ts';
 
 // --- Props & Emits ---
 const props = defineProps({

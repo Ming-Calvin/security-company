@@ -1,5 +1,5 @@
 // 通用api类型
-import type { PageResult } from '../types.ts'
+import type { PageResult } from './base.ts'
 
 // 台账搜索参数
 export interface LedgerListParams {

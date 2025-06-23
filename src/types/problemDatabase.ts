@@ -1,5 +1,5 @@
-import type { PageResult } from '../types.ts'
-import { getProblemDetails } from '@/services/api/problemDatabase/index.ts'
+import type { PageResult } from './base.ts'
+import { getProblemDetails } from '@/api/problemDatabase.ts'
 
 // 问题的数量统计
 export interface ProblemCountData {
@@ -7,6 +7,30 @@ export interface ProblemCountData {
   runningCount: number;
   noCommitCount: number;
   endCount: number;
+}
+
+// Tab数据结构
+export interface ProblemCountTab {
+  label: string;
+  name: string;
+  count: number;
+  apiKey: keyof ProblemCountData;
+}
+
+// 展示表格项
+export interface ProblemTableItem {
+  id: string; // 问题ID
+  fInspectionDept: string; // 检查部门
+  fDeptSubjectInspection: string; // 被检查部门
+  fInspectionItems: string; // 检查事项
+  fDiscoverTime: number; // 发现问题时点
+  fProblemDescription: string; // 问题描述
+  fProblemType: string; // 问题类型
+  fIsIllegal: 0 | 1; // 是否涉嫌违规 (1: 是, 0: 否)
+  fEntryTime: number; // 录入时间
+  fProposerTime?: number; // 提出时间
+  fAdviceTime: number; // 建议整改时点
+  fIsCommit: 0 | 1; // 是否提交研判 (1: 是, 0: 否)
 }
 
 // 单个问题的数据项类型
@@ -31,7 +55,7 @@ export interface ProblemListParams {
   rows: number;
   sort: string;
   order: 'asc' | 'desc';
-  status?: '' | '1' | '2' | '3';
+  status?: string;
   keyword?: string;
   problemType?: string;
   // 日期范围参数
