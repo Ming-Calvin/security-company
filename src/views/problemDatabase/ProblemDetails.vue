@@ -17,7 +17,7 @@
               {{ item.nodeName }}
             </el-button>
             <el-button type="primary" v-if="!route.query.taskId" @click="openApprovalModal('UserTask2')">提交研判</el-button>
-<!--            <el-button>流转记录</el-button>-->
+            <el-button>流转记录</el-button>
             <el-button @click="showFlowChartModal = true">流程图</el-button>
             <el-button>编辑</el-button>
             <el-button>删除</el-button>

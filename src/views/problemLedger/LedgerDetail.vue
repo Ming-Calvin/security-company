@@ -19,7 +19,7 @@
             <el-button type="primary" v-if="!route.query.taskId" @click="openApprovalModal('UserTask2')">提交</el-button>
             <el-button type="primary" @click="openUpdateDialog()">更新进展</el-button>
             <el-button type="primary" @click="openEvaluationModal()">纪委评价</el-button>
-<!--            <el-button>流转记录</el-button>-->
+            <el-button>流转记录</el-button>
             <el-button @click="isFlowModalVisible = true">流程图</el-button>
             <el-button>编辑</el-button>
             <el-button>删除</el-button>

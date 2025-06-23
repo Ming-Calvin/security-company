@@ -19,9 +19,9 @@
           <el-input v-model="formData.fProblemDescription" type="textarea" :rows="3" placeholder="请输入" />
         </el-form-item>
 
-<!--        <el-form-item label="关联台账" prop="fConnectionBook">-->
-<!--          <el-button :icon="Plus" circle @click="openLedgerSelector" />-->
-<!--        </el-form-item>-->
+        <el-form-item label="关联台账" prop="fConnectionBook">
+          <el-button :icon="Plus" circle @click="openLedgerSelector" />
+        </el-form-item>
 
         <el-divider />
 
