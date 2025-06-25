@@ -10,8 +10,8 @@ import VueDevTools from 'vite-plugin-vue-devtools'
 
 export default defineConfig(({ command }) => {
   // serve命令下 目录地址/ ， build 命令下 目录地址 /security-company/
-  // const base = command === 'serve' ? '/' : '/security-company/';
-  const base = '/';
+  const base = command === 'serve' ? '/' : '/security-company/';
+  // const base = '/';
 
   return {
     base: base,
@@ -80,6 +80,10 @@ export default defineConfig(({ command }) => {
       proxy: {
         '/standard': {
           target: 'http://192.168.21.68:9010',
+          changeOrigin: true,
+        },
+        '/redBus': {
+          target: 'http://192.168.21.68:80',
           changeOrigin: true,
         }
       }

@@ -5,7 +5,7 @@
         <div class="card-header">
           <el-page-header @back="handleGoBack" class="page-header-title">
             <template #content>
-              <span class="font-bold">问题详情</span>
+              <span class="font-bold">督办详情</span>
             </template>
           </el-page-header>
           <div class="header-actions">
@@ -19,7 +19,7 @@
             <el-button type="primary" v-if="!route.query.taskId" @click="openApprovalModal('UserTask2')">提交</el-button>
             <el-button type="primary" @click="openUpdateDialog()">更新进展</el-button>
             <el-button type="primary" @click="openEvaluationModal()">纪委评价</el-button>
-            <el-button>流转记录</el-button>
+<!--            <el-button>流转记录</el-button>-->
             <el-button @click="isFlowModalVisible = true">流程图</el-button>
             <el-button>编辑</el-button>
             <el-button>删除</el-button>
@@ -264,11 +264,13 @@ const details = ref<FullProblemDetails>({} as FullProblemDetails);
 
 // 获取问题详情
 const getLedgerDetailData = async () => {
-  const ledgerId: string = route.query.id;
 
   try {
     loading.value = true;
-    const response = await getRectificationRecordById(ledgerId);
+    const response = await getRectificationRecordById({
+      id: route.query.id,
+      procInstId: route.query.procInstId
+    });
 
     if (response.success) {
       details.value = response.data;
@@ -285,12 +287,11 @@ const getLedgerDetailData = async () => {
 
 // 获取更新进展详情
 const getRectProcessData = async () => {
-  // const ledgerId: string = route.query.id;
   const queryParams: RectProcessListParams = {
     page: 1,
     rows: 10,
     order: 'asc',
-    "Q^REF_ID_^SL": route.query.id
+    "Q^REF_ID_^SL": route.query.id || route.query.taskId
   }
 
   try {
@@ -316,7 +317,7 @@ const getRectEvaluationData = async () => {
     page: 1,
     rows: 10,
     order: 'asc',
-    "Q^REF_ID_^SL": route.query.id
+    "Q^REF_ID_^SL": route.query.id || route.query.taskId
   }
 
   try {
@@ -348,7 +349,7 @@ const viewBook = (id: string) => alert(`跳转到台账详情: ${id}`);
 
 // --- 更新进展 ---
 // 当前记录ID
-const currentRecordId = route.query.id
+const currentRecordId = route.query.id || route.query.taskId
 const isModalVisible = ref(false);
 
 const openUpdateDialog = () => {

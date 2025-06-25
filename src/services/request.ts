@@ -1,7 +1,7 @@
 // 导入 InternalAxiosRequestConfig
 import axios, { type InternalAxiosRequestConfig } from 'axios';
 import type { AxiosInstance, AxiosResponse } from 'axios';
-// import store from '@/stores';
+import { getToken } from '@/utils/auth.ts'
 
 const instance: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -13,10 +13,13 @@ const instance: AxiosInstance = axios.create({
 instance.interceptors.request.use(
   // 使用正确的类型
   (config: InternalAxiosRequestConfig) => {
-    const token = 'JSESSIONID=9F517B2B050F16707094813678A1FD81; BIZ_USERNAME=admin; systemId=1';
+    // 获取token
+    const token = getToken()
+
     if (token) {
-      // config.headers.Cookie = token;
+      config.headers.Authorization = `Bearer ${token}`;
     }
+
     return config;
   },
   (error) => {

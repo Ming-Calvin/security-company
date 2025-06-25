@@ -103,6 +103,24 @@ export function getUserTable(query: PeopleSelectUserParams) {
   })
 }
 
+// 部门选择器
+export function getOrgTable(query: PeopleSelectUserParams) {
+  // 固定参数
+  const staticParams = {
+    dialog_alias_: 'orgSelector',
+    demId: 1,
+  };
+
+  return request<PeopleSelectUserTable> ({
+    url: "/form/customDialog/getListData",
+    method: "get",
+    params: {
+      ...staticParams,
+      ...query
+    }
+  })
+}
+
 // 发起接口
 export function problemWarehouseCommit(data: ProblemDetailWithStartFlow) {
   return request<ApiResponse<any>>({

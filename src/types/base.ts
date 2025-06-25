@@ -72,3 +72,24 @@ export interface QuestionOrderTaskIdParams {
 export interface QuestionOrderTaskIdResult {
   taskId: string;
 }
+
+// 人员字段
+export interface UserInfo {
+  hrId: string;
+  deptId: string;
+  loginName: string;
+  userName: string;
+  email: string;
+  phonenumber: string;
+  userDeptName: string;
+  companyName: string;
+}
+
+// 人员参数返回
+export interface GetRoleApiResponse {
+  msg: string;
+  code: number;
+  permissions: string[];
+  roles: string[];
+  user: UserInfo;
+}

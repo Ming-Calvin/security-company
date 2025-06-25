@@ -5,7 +5,7 @@
         <div class="card-header">
           <el-page-header @back="handleGoBack" class="page-header-title">
             <template #content>
-              <span class="font-bold">督办详情</span>
+              <span class="font-bold">问题详情</span>
             </template>
           </el-page-header>
           <div class="header-actions">
@@ -17,7 +17,7 @@
               {{ item.nodeName }}
             </el-button>
             <el-button type="primary" v-if="!route.query.taskId" @click="openApprovalModal('UserTask2')">提交研判</el-button>
-            <el-button>流转记录</el-button>
+<!--            <el-button>流转记录</el-button>-->
             <el-button @click="showFlowChartModal = true">流程图</el-button>
             <el-button>编辑</el-button>
             <el-button>删除</el-button>
@@ -72,10 +72,11 @@
             <el-icon><Link /></el-icon>
             佐证材料
           </h3>
+
           <div class="attachment-list">
             <div v-for="(file, index) in attachmentList" :key="index" class="attachment-item">
               <el-icon :size="24" color="#ff6b6b"><Document /></el-icon>
-              <div class="file-info">
+              <div class="file-info" @click="handleDownload(file)">
                 <span class="file-name">{{ file.name }}</span>
               </div>
             </div>
@@ -112,7 +113,7 @@ import type { Node, Edge, Position } from '@vue-flow/core';
 import { ElMessage } from 'element-plus'
 import { getTaskHandleDetailByTaskId } from '@/api/base.ts'
 import PeopeleSelect from '@/components/PeopeleSelect.vue'
-
+import request from '@/services/request';
 
 interface AttachmentFile {
   name: string;
@@ -161,6 +162,34 @@ const attachmentList = computed((): AttachmentFile[] => {
 // --- 事件处理 ---
 const handleGoBack = () => {
   router.back();
+};
+
+const handleDownload = async (file: Attachment) => {
+  try {
+    const response = await request({
+      url: `/system/file/download?id=${file.id}`,
+      method: 'get',
+      responseType: 'blob', // [关键] 告诉 Axios 期望接收二进制数据
+    });
+
+    // 创建一个 Blob URL
+    const blobUrl = window.URL.createObjectURL(new Blob([response]));
+
+    // 创建一个隐藏的 <a> 标签并模拟点击
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.setAttribute('download', file.name); // 设置下载文件名
+    document.body.appendChild(link);
+    link.click();
+
+    // 清理
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(blobUrl);
+
+  } catch (error) {
+    console.error('下载失败:', error);
+    ElMessage.error('下载文件失败！');
+  }
 };
 
 // --- 工具函数 ---

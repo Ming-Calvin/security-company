@@ -1,6 +1,6 @@
 import request from '@/services/request.ts';
 // 通用类型
-import type { ApiResponse, QuestionOrderTaskIdParams, QuestionOrderTaskIdResult } from '@/types/base.ts'
+import type { ApiResponse, QuestionOrderTaskIdParams, QuestionOrderTaskIdResult, GetRoleApiResponse } from '@/types/base.ts'
 
 // 根据任务Id获取TaskId
 export function getQuestionOrderTaskId(params: QuestionOrderTaskIdParams) {
@@ -21,3 +21,21 @@ export function getTaskHandleDetailByTaskId(taskId: string) {
     }
   })
 }
+
+// 获取登录人员权限
+export function getRole() {
+  return request<GetRoleApiResponse>({
+    baseURL: '/',
+    url: '/redBus-api/getInfo',
+    method: 'get'
+  })
+}
+
+export function loginByTgt(code: string) {
+  return request<any>({
+    baseURL: '/',
+    url: '/redBus-api/loginByTgt?code=' + code,
+    method: 'get',
+  })
+}
+

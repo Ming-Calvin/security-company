@@ -8,43 +8,35 @@
       active-text-color="#3776f0"
       :router="true"
     >
-      <el-menu-item index="/ledger-dashboard">
-        <el-icon><Menu /></el-icon>
-        <span>监督台账</span>
+      <el-menu-item
+        v-for="item in accessibleMenuItems"
+        :key="item.index"
+        :index="item.index"
+      >
+        <el-icon>
+<!--          <component :is="item.icon" />-->
+          <Histogram/>
+        </el-icon>
+        <span>{{ item.title }}</span>
       </el-menu-item>
 
-      <el-menu-item index="/super-agency">
-        <el-icon><Histogram /></el-icon>
-        <span>监督待办</span>
-      </el-menu-item>
-
-      <el-menu-item index="/super-evaluation">
-        <el-icon><Comment /></el-icon>
-        <span>监督评价</span>
-      </el-menu-item>
-
-      <el-menu-item index="/question-bank">
-        <el-icon><QuestionFilled /></el-icon>
-        <span>问题库</span>
-      </el-menu-item>
-
-      <div class="header-search">
-        <el-input
-          v-model="searchQuery"
-          placeholder="综合查询"
-          class="input-with-select"
-        >
-          <template #append>
-            <el-button :icon="Search" />
-          </template>
-        </el-input>
-      </div>
+<!--      <div class="header-search">-->
+<!--        <el-input-->
+<!--          v-model="searchQuery"-->
+<!--          placeholder="综合查询"-->
+<!--          class="input-with-select"-->
+<!--        >-->
+<!--          <template #append>-->
+<!--            <el-button :icon="Search" />-->
+<!--          </template>-->
+<!--        </el-input>-->
+<!--      </div>-->
 
       <div class="right-menu">
         <el-dropdown class="avatar-container" trigger="click">
           <div class="avatar-wrapper">
             <el-avatar icon="UserFilled" :size="30" />
-            <span class="user-name">{{ userInfo?.name || '管理员' }}</span>
+            <span class="user-name">{{ userInfo?.userName || '管理员' }}</span>
             <el-icon class="el-icon--right"><arrow-down /></el-icon>
           </div>
           <template #dropdown>
@@ -60,29 +52,108 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+// 1. [新增] 导入所有需要的模块
+import { ref, computed, shallowRef, type Component } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-// import { useStore } from 'vuex';
-import { Search } from '@element-plus/icons-vue';
+import {
+  Menu as IconMenu,
+  Histogram,
+  Comment,
+  QuestionFilled,
+  Setting,
+  Search,
+  ArrowDown, // [新增] 导入缺失的图标
+} from '@element-plus/icons-vue';
 
-const route = useRoute();
+// 2. [修改] 从 store 中解构数据
+import { useUserStore } from '@/stores/modules/user'; // 假设你使用了 index.ts 统一导出
+import { storeToRefs } from 'pinia';
+
+const userStore = useUserStore();
+const { userInfo } = storeToRefs(userStore); // 只解构需要的部分
+
+// 3. [新增] 定义模板中用到的所有状态和方法
 const router = useRouter();
-// const stores = useStore();
+const route = useRoute();
 
 const searchQuery = ref('');
-const activeMenu = ref('');
 
-// const userInfo = computed(() => stores.getters['user/userInfo']);
-const userInfo = {}
+// 使用 computed 属性，让激活的菜单根据当前路由路径自动更新
+const activeMenu = computed(() => route.path);
 
 const goToProfile = () => {
-  router.push('/profile');
+  router.push('/profile'); // 假设个人中心路由为 /profile
 };
 
 const handleLogout = () => {
-  // stores.dispatch('user/logout');
+  // 假设你的 userStore 中有 logout action
+  userStore.logout();
+  // 登出后跳转到登录页
   router.push('/login');
 };
+
+
+// 4. 定义菜单配置数据 (你的代码，是正确的)
+interface MenuItem {
+  index: string;
+  title: string;
+  icon: Component;
+}
+
+// 角色标识符说明：
+// boos: 公司一把手
+// jwsj: 纪委书记
+// dwsj: 党委书记
+// fglm: 分管领导 (我为你创建的缩写)
+// znbm: 职能部门
+// admin: 系统管理员 (我为你添加的，用于访问“系统设置”)
+
+const menuItems: MenuItem[] = [
+  {
+    index: '/ledger-dashboard',
+    title: '监督台账',
+    icon: shallowRef(IconMenu),
+    roles: ['admin', 'boos', 'jwsj', 'dwsj', 'fglm', 'znbm'],
+  },
+  {
+    index: '/super-agency',
+    title: '监督待办',
+    icon: shallowRef(Histogram),
+    roles: ['admin', 'boos', 'jwsj', 'dwsj', 'fglm', 'znbm'],
+  },
+  {
+    index: '/super-evaluation',
+    title: '监督评价',
+    icon: shallowRef(Comment),
+    roles: ['admin', 'boos', 'jwsj', 'dwsj', 'fglm'],
+  },
+  {
+    index: '/question-bank',
+    title: '问题库',
+    icon: shallowRef(QuestionFilled),
+    roles: ['admin', 'znbm'],
+  },
+  {
+    index: '/system-setting',
+    title: '系统设置',
+    icon: shallowRef(Setting),
+    roles: ['admin', 'boos'], // 假设系统设置只有'admin'角色可以访问
+  },
+];
+
+const { roles: userRoles } = storeToRefs(userStore);
+
+const accessibleMenuItems = computed(() => {
+  return menuItems.filter(menuItem => {
+    // a. 如果菜单项没有定义 roles，则所有人可见
+    if (!menuItem.roles || menuItem.roles.length === 0) {
+      return true;
+    }
+    // b. 否则，检查用户的角色中是否至少有一个存在于菜单项的 roles 数组中
+    // some() 方法在这里非常适合
+    return userRoles.value.some(userRole => menuItem.roles!.includes(userRole));
+  });
+});
 
 // --- 生命周期 ---
 onBeforeMount(() => {
@@ -110,7 +181,7 @@ onBeforeMount(() => {
   padding: 0 40px;
 
   .input-with-select {
-    width: 400px;
+    width: 200px;
     margin: auto;
     :deep(.el-input-group__prepend) {
       background-color: #fff;

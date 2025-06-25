@@ -170,6 +170,7 @@
     title="选择检查部门"
     :select-user="initialSelectedUsers"
     :multiple="false"
+    :tableName="tableName"
     :fetch-tree-api="getTreeData"
     :fetch-user-list-api="getUserListData"
     @select-people="handleDeptSelected"
@@ -184,7 +185,7 @@ import { ElMessage } from 'element-plus';
 import { Plus, Link } from '@element-plus/icons-vue';
 
 // 接口
-import { getTreeList, getUserTable, saveProblem } from '@/api/problemDatabase.ts'
+import { getTreeList, getOrgTable, saveProblem } from '@/api/problemDatabase.ts'
 import type { ProblemSavePayload } from '@/types/problemDatabase.ts'
 
 // 人员选择器
@@ -234,6 +235,11 @@ const rules = reactive<FormRules>({
 const handleGoBack = () => {
   router.push({ name: 'question-bank' });
 };
+
+const tableName = ref({
+  name: "NAME_",
+  dept: "PATH_NAME_"
+})
 
 // 提交表单
 const handleSubmit = async () => {
@@ -309,7 +315,7 @@ const getTreeData = async (node: any) => {
 // 获取人员列表数据
 const getUserListData = async (params: any) => {
   try {
-    const response = await getUserTable(params);
+    const response = await getOrgTable(params);
 
     return response
   } catch (e) {
@@ -337,10 +343,10 @@ const handleDeptSelected = (selected: any[]) => {
   const target = currentTargetProp.value;
 
   if (target === 'fInspectionDept') {
-    formData.fInspectionDept = selectedUser.FULLNAME_;
+    formData.fInspectionDept = selectedUser.NAME_;
     formData.fInspectionDeptId = selectedUser.CODE_;
   } else if (target === 'fDeptSubjectInspection') {
-    formData.fDeptSubjectInspection = selectedUser.FULLNAME_;
+    formData.fDeptSubjectInspection = selectedUser.NAME_;
     formData.fDeptSubjectInspectionId = selectedUser.CODE_;
   }
 };

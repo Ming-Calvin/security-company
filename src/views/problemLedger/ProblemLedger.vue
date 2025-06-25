@@ -5,14 +5,14 @@
         <div class="menu-title">常用台账</div>
         <ul class="menu-list">
           <li
-            v-for="item in menuItems"
-            :key="item.key"
+            v-for="item in accessibleMenuItems"
+            :key="item.title"
             class="menu-item"
-            :class="{ 'is-active': activeMenu === item.key }"
-            @click="handleMenuClick(item.key)"
+            :class="{ 'is-active': activeMenu === item.title }"
+            @click="handleMenuClick(item.title)"
           >
-            <el-icon><Menu /></el-icon>
-            <span>{{ item.label }}</span>
+            <el-icon> <Menu /> </el-icon>
+            <span>{{ item.title }}</span>
           </li>
         </ul>
       </div>
@@ -59,13 +59,24 @@
                       <el-select v-model="queryParams.fSuperviseType" placeholder="请选择监督类型" clearable style="width: 100%;">
                         <el-option label="组织监督" value="组织监督" />
                         <el-option label="民主监督" value="民主监督" />
+                        <el-option label="制度监督" value="制度监督" />
+                        <el-option label="信访举报监督" value="信访举报监督" />
+                        <el-option label="纪律审查监督" value="纪律审查监督" />
+                        <el-option label="巡视巡察监督" value="巡视巡察监督" />
+                        <el-option label="日常监督" value="日常监督" />
                       </el-select>
                     </el-form-item>
                   </el-col>
                   <el-col :span="8">
                     <el-form-item label="监督来源" prop="fSuperviseSource">
                       <el-select v-model="queryParams.fSuperviseSource" placeholder="请选择监督来源" clearable style="width: 100%;">
-                        <el-option label="打工人必看" value="打工人必看" />
+                        <el-option label="集团党组监督" value="集团党组监督" />
+                        <el-option label="集团纪检监察组监督" value="集团纪检监察组监督" />
+                        <el-option label="巡视监督" value="巡视监督" />
+                        <el-option label="审计监督" value="审计监督" />
+                        <el-option label="党员民主监督" value="党员民主监督" />
+                        <el-option label="职工群众监督反映" value="职工群众监督反映" />
+                        <el-option label="常态化监督" value="常态化监督" />
                       </el-select>
                     </el-form-item>
                   </el-col>
@@ -181,9 +192,11 @@
             </el-table-column>
           </el-table>
 
+          <!--  分页    -->
           <el-pagination
-            class="mt-4 custom-pagination"
+            class="pagination"
             :total="total"
+            float-right m-4
             v-model:current-page="queryParams.page"
             v-model:page-size="queryParams.rows"
             layout="total, sizes, prev, pager, next, jumper"
@@ -210,22 +223,86 @@ const router = useRouter();
 const total = ref(0);
 
 // --- 左侧菜单状态 ---
-const activeMenu = ref('first-resp'); // 默认选中的菜单项 key
-const menuItems = ref([
-  { key: 'first-resp', label: '第一责任监督台账' },
-  { key: 'secretary', label: '纪委书记监督台账' },
-  { key: 'dual-resp', label: '一岗双责监督台账' },
-  { key: 'functional', label: '职能监督台账' },
-  { key: 'business', label: '业务监督台账' },
-  { key: 'group', label: '集团监督台账' },
-]);
+interface SystemLedger {
+  key: string; // 添加一个唯一的key，用于v-for和查找
+  title: string;
+  total?: number; // 统计数据设为可选，因为它们是动态获取的
+  completed?: number;
+  pending?: number;
+  overdue?: number;
+  roles: string[]; // [核心] 定义可以访问此台账的角色
+}
+
+const allMenuItems: SystemLedger[] = [
+  {
+    key: 'first-responsibility',
+    title: '第一责任监督台账',
+    roles: ['boos'], // 只有“一把手”能看
+  },
+  {
+    key: 'dual-responsibility',
+    title: '一岗双责监督台账',
+    roles: ['dwsj'], // 只有“党委书记”能看
+  },
+  {
+    key: 'discipline-secretary',
+    title: '纪委书记专责监督台账',
+    roles: ['jwsj'], // 只有“纪委书记”能看
+  },
+  {
+    key: 'discipline-rereview',
+    title: '纪委办再监督台账',
+    roles: ['jwb'], // 只有“纪委办”能看
+  },
+  {
+    key: 'functional-dept',
+    title: '职能部门监督台账',
+    roles: ['znbm'], // 只有“职能部门”能看
+  },
+  {
+    key: 'business-dept',
+    title: '业务部门监督台账',
+    roles: ['znbm', 'ywb'], // “职能部门”和“业务部门”都能看
+  },
+  {
+    key: 'overview',
+    title: '台账总览',
+    // “一把手”, “党委书记”, “纪委书记”, “纪委办” 能看
+    roles: ['boos', 'dwsj', 'jwsj', 'jwb'],
+  },
+];
+
+import { useUserStore } from '@/stores/modules/user.ts';
+
+const userStore = useUserStore();
+const { roles: userRoles } = storeToRefs(userStore);
+
+// --- 状态 ---
+const activeMenu = ref(''); // 默认选中的菜单项 key
+
+// --- 3. [核心] 创建一个新的计算属性来动态过滤【左侧菜单】 ---
+const accessibleMenuItems = computed(() => {
+  const currentUserRoles = userRoles.value;
+
+  return allMenuItems.filter(menuItem => {
+    // 特殊规则：如果用户的角色数组中包含 'jwsj' 或 'jwb'
+    if (currentUserRoles.includes('jwsj') || currentUserRoles.includes('jwb')) {
+      return true;
+    }
+
+    // 常规规则：检查用户的角色和菜单所需的角色是否有交集
+    // some() 方法需要在一个真实的数组上调用
+    return currentUserRoles.some(userRole => menuItem.roles.includes(userRole));
+  });
+});
+
 
 // --- 右侧内容状态 ---
 const activeSubTab = ref('all');
 const subTabs = ref([
-  { label: '台账总数', name: 'all', count: 0 },
-  { label: '未完结', name: 'pending', count: 0 },
-  { label: '已完结', name: 'completed', count: 0 },
+  { label: '台账总数', name: 'all', count: 40 },
+  { label: '未完结', name: 'pending', count: 12 },
+  { label: '已完结', name: 'completed', count: 28 },
   { label: '整改超时', name: 'overdue', count: 0 },
 ]);
 
@@ -254,9 +331,7 @@ const toggleFilterArea = () => {
 // --- 事件处理函数 (目前为占位符) ---
 const handleMenuClick = (menuKey: string) => {
   activeMenu.value = menuKey;
-  console.log(`切换到左侧菜单: ${menuKey}`);
-  // 在这里触发右侧内容的重新加载
-  // e.g., getList();
+  getList();
 };
 
 const handleSubTabChange = (tabName: string | number) => {
@@ -281,7 +356,7 @@ const getList = async () => {
 
     if(response.code === 200) {
       tableData.value = response.data.rows;
-      total.value = response.data.pageResult.total;
+      total.value = response.data.total;
     } else {
       console.error('获取列表失败')
     }
@@ -346,8 +421,12 @@ const handleCreate = () => {
   router.push({ name: 'ledger-entry' });
 };
 
+const route = useRoute()
+
 onMounted(() => {
   getList();
+
+  activeMenu.value = route.query.ledger || 'overview'
 });
 </script>
 

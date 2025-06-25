@@ -198,6 +198,9 @@ import { Search, Refresh, Plus, Upload, Position, ArrowDown } from '@element-plu
 // api
 import { getProblemCount, getProblemList, problemWarehouseRemove } from '@/api/problemDatabase.ts'
 import type {ProblemCountData, ProblemCountTab, ProblemListParams, ProblemTableItem } from '@/types/problemDatabase.ts'
+import { getSuperviseFieldList } from '@/api/systemConfiguration.ts'
+import type { SuperviseFieldItem } from '@/types/systemConfiguration.ts'
+import { getRole } from '@/api/base.ts'
 
 // 路由
 const router = useRouter();
@@ -308,6 +311,19 @@ const resetQuery = () => {
   handleQuery();
 };
 
+// 配置字段获取
+const getSuperviseField = async (name: string) => {
+  try {
+    const response = await getSuperviseFieldList({ 'Q^FIELD_NAME^SL': name })
+
+    if(response.code === 200) {
+      console.log(response, 'response')
+    }
+  } catch (e) {
+    console.error(`${name}字段获取失败`)
+  }
+}
+
 // =========== 展示表格 ===========
 const loading = ref(true);
 const total = ref(0);
@@ -349,7 +365,7 @@ const handleSelectionChange = (selection: ProblemTableItem[]) => {
 };
 // 提交研判
 const handleSubmit = (row: ProblemTableItem) => {
-  router.push({ name: 'problem-detail', query: { id: row.id } });
+  router.push({ name: 'problem-detail', query: { id: row.id, opera: 'submit' } });
 };
 // 编辑
 const handleEdit = (row: ProblemTableItem) => {
@@ -385,6 +401,7 @@ const handleDelete = async (row: ProblemTableItem) => {
 onMounted(() => {
   getList();
   getProblemCountFun();
+  getSuperviseField('字段');
 });
 
 </script>

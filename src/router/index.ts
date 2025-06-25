@@ -43,10 +43,22 @@ const router = createRouter({
           meta: { title: '监督评价', requiresAuth: true }
         },
         {
+          path: '/evaluation-detail',
+          name: 'evaluation-detail',
+          component: () => import('../views/superEvaluation/DeptEvaluationDetail.vue'),
+          meta: { title: '监督评价', requiresAuth: true }
+        },
+        {
           path: '/question-bank',
           name: 'question-bank',
           component: () => import('../views/problemDatabase/QuestionBank.vue'),
           meta: { title: '问题库', requiresAuth: true }
+        },
+        {
+          path: '/system-setting',
+          name: 'system-setting',
+          component: () => import('../views/systemSetting/SystemSetting.vue'),
+          meta: { title: '系统设置', requiresAuth: true }
         }
       ]
     },

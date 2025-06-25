@@ -1,63 +1,101 @@
-import { Module } from 'vuex';
-import { RootState } from '../index'; // 我们稍后会创建 RootState
+// src/stores/user.ts
 
-// 定义 user 模块的 state 类型
-export interface UserState {
-  token: string | null;
-  userInfo: Record<string, any> | null;
-}
+import { ref, computed } from 'vue';
+import { defineStore } from 'pinia';
+import { ElMessage } from 'element-plus';
+// 导入我们刚刚创建的 API 函数和类型
+import { getRole , loginByTgt } from '@/api/base.ts'
+import { getToken, setToken } from '@/utils/auth.ts'
 
-const userModule: Module<UserState, RootState> = {
-  namespaced: true, // 开启命名空间
+export const useUserStore = defineStore('user', () => {
+  // 角色信息 和 权限
+  const userInfo = ref<UserInfo | null>(null);
+  const roles = ref<string[]>([]);
 
-  state: (): UserState => ({
-    token: localStorage.getItem('token') || null, // 从 localStorage 初始化 token
-    userInfo: null,
-  }),
+  const token = ref<string | null>(localStorage.getItem('A-token'));
 
-  mutations: {
-    SET_TOKEN(state, token: string | null) {
-      state.token = token;
-      if (token) {
-        localStorage.setItem('token', token);
+  // =================================================================
+  // 2. Getters (计算属性)
+  // =================================================================
+
+  // 通过 userInfo 是否有值来判断是否已登录并获取了信息
+  const isLoggedIn = computed(() => !!userInfo.value && !!token.value);
+  const userName = computed(() => userInfo.value?.userName || '未登录');
+
+  // =================================================================
+  // 3. Actions (方法)
+  // =================================================================
+
+  /**
+   * @description 获取并设置当前用户的核心信息 (user 和 roles)
+   */
+  async function getUserInfo(): Promise<void> {
+    try {
+      const token = getToken();
+
+      if(token && token.startsWith('TGT')) {
+        const response = await loginByTgt(token)
+
+        if(response.code == 200) {
+          setToken(response.token)
+
+          try {
+            await fetchUserInfo()
+          } catch (e) {
+            console.log(e, e)
+          }
+        }
       } else {
-        localStorage.removeItem('token');
+        await fetchUserInfo()
       }
-    },
-    SET_USER_INFO(state, userInfo: Record<string, any> | null) {
-      state.userInfo = userInfo;
-    },
-  },
+    } catch (e) {
+      console.error(e)
+    }
+  }
 
-  actions: {
-    // 模拟登录
-    async login({ commit }, { username, password }) {
-      // 在真实项目中，这里会调用 API
-      console.log('Login attempt with:', username, password);
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          const mockToken = `mock_token_${Date.now()}`;
-          const mockUserInfo = { name: 'Admin', role: 'admin', email: 'admin@test.com' };
+  async function fetchUserInfo(): Promise<void> {
+    try {
+      const response = await getRole();
 
-          commit('SET_TOKEN', mockToken);
-          commit('SET_USER_INFO', mockUserInfo);
-          resolve(mockToken);
-        }, 1000);
-      });
-    },
+      if (response.code === 200 && response.user) {
+        // [核心] 只提取并存储 user 和 roles 两个字段
+        userInfo.value = response.user;
+        roles.value = response.roles;
+      } else {
+        // 如果获取失败，清空用户信息并提示错误
+        // clearUserInfo();
+        ElMessage.error(response.msg || '获取用户信息失败');
+      }
+    } catch (error) {
+      clearUserInfo();
+      console.error('请求用户信息接口失败:', error);
+      ElMessage.error('网络错误或认证失败，无法获取用户信息');
+    }
+  }
 
-    // 登出
-    logout({ commit }) {
-      commit('SET_TOKEN', null);
-      commit('SET_USER_INFO', null);
-    },
-  },
+  /**
+   * @description 清空用户信息和角色
+   */
+  function clearUserInfo(): void {
+    token.value = null;
+    userInfo.value = null;
+    roles.value = [];
+    removeToken()
+  }
 
-  getters: {
-    isLoggedIn: (state): boolean => !!state.token,
-    token: (state): string | null => state.token,
-    userInfo: (state): Record<string, any> | null => state.userInfo,
-  },
-};
-
-export default userModule;
+  // 必须 return 所有需要暴露给组件的状态和方法
+  return {
+    // State
+    userInfo,
+    roles,
+    token,
+    // Getters
+    isLoggedIn,
+    userName,
+    getUserInfo,
+    // Actions
+    fetchUserInfo,
+    clearUserInfo,
+    setToken,
+  };
+});

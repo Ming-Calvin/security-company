@@ -11,6 +11,7 @@ import type {
   ProblemDetailWithStartFlow
 } from '@/types/problemLedger.ts'
 import type { ApiResponse } from '@/types/base.ts'
+import type { ProblemDetailsParams } from '@/types/problemDatabase.ts'
 
 
 export function getRectificationList(params: LedgerListParams) {
@@ -30,13 +31,11 @@ export function saveLedger(payload: LedgerFormData) {
 }
 
 // 获取表单详情
-export function getRectificationRecordById(id: string) {
+export function getRectificationRecordById(params: ProblemDetailsParams) {
   return request<ApiResponse<RectificationRecord>>({
     url: '/core/rectificationBook/rectificationBook/getJson',
     method: 'get',
-    params: {
-      id: id
-    }
+    params
   });
 }
 

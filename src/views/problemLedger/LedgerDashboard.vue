@@ -7,8 +7,8 @@
       </div>
       <el-row :gutter="24">
         <el-col
-          v-for="ledger in systemLedgers"
-          :key="ledger.title"
+          v-for="ledger in accessibleSystemLedgers"
+          :key="ledger.key"
           :span="12"
         >
           <el-card shadow="hover" class="system-ledger-card">
@@ -21,14 +21,17 @@
                 <div class="stat-label">台账总数</div>
                 <div class="stat-value text-purple">{{ ledger.total }}</div>
               </div>
+
               <div class="stat-item">
                 <div class="stat-label">已完结</div>
                 <div class="stat-value">{{ ledger.completed }}</div>
               </div>
+
               <div class="stat-item">
                 <div class="stat-label">未完结</div>
                 <div class="stat-value">{{ ledger.pending }}</div>
               </div>
+
               <div class="stat-item">
                 <div class="stat-label">整改超时</div>
                 <div class="stat-value text-red">{{ ledger.overdue }}</div>
@@ -47,11 +50,11 @@
       </div>
       <el-row :gutter="24">
         <el-col
-          v-for="ledger in commonLedgers"
+          v-for="ledger in accessibleSystemLedgers"
           :key="ledger.title"
           :xs="24" :sm="12" :md="8" :lg="6"
         >
-          <el-card shadow="hover" class="common-ledger-card">
+          <el-card shadow="hover" class="common-ledger-card" @click="viewLedger(ledger)">
             <div class="card-top">
               <span class="card-title">{{ ledger.title }}</span>
               <el-button link type="primary" :icon="EditPen" @click="editSingleLedger(ledger)" />
@@ -91,17 +94,88 @@ interface CommonLedger {
 
 // --- 2. 创建响应式数据对象 ---
 
-// 系统台账数据
-const systemLedgers = ref<SystemLedger[]>([
-  { title: '纪委再监督台账', total: 40, completed: 10, pending: 23, overdue: 12 },
-  { title: '台账总览', total: 150, completed: 10, pending: 23, overdue: 15 },
-]);
+interface SystemLedger {
+  key: string; // 添加一个唯一的key
+  title: string;
+  total?: number; // 统计数据设为可选，因为它们是动态获取的
+  completed?: number;
+  pending?: number;
+  overdue?: number;
+  roles: string[]; // [核心] 定义可以访问此台账的角色
+}
+
+const allSystemLedgers: SystemLedger[] = [
+  {
+    key: 'discipline-rereview',
+    title: '纪委再监督台账',
+    total: 40, completed: 10, pending: 23, overdue: 12,
+    description: '更新了台账数据', lastUpdated: '2025-06-24',
+    roles: ['admin', 'jwb'], // 纪委办
+  },
+  {
+    key: 'overview',
+    title: '台账总览',
+    total: 40, completed: 10, pending: 23, overdue: 12,
+    description: '更新了台账数据', lastUpdated: '2025-06-24',
+    roles: ['admin','boos', 'jwsj', 'dwsj', 'fglm', 'jwb'],
+  },
+  {
+    key: 'first-responsibility',
+    title: '第一责任监督台账',
+    total: 40, completed: 10, pending: 23, overdue: 12,
+    description: '更新了台账数据', lastUpdated: '2025-06-24',
+    roles: ['admin','boos'],
+  },
+  {
+    key: 'dual-responsibility',
+    title: '一岗双责监督台账',
+    total: 40, completed: 10, pending: 23, overdue: 12,
+    description: '更新了台账数据', lastUpdated: '2025-06-24',
+    roles: ['admin','dwsj'],
+  },
+  {
+    key: 'discipline-secretary',
+    title: '纪委书记专责监督台账',
+    total: 40, completed: 10, pending: 23, overdue: 12,
+    description: '更新了台账数据', lastUpdated: '2025-06-24',
+    roles: ['admin','jwsj'],
+  },
+  {
+    key: 'functional-dept',
+    title: '职能部门监督台账',
+    total: 40, completed: 10, pending: 23, overdue: 12,
+    description: '更新了台账数据', lastUpdated: '2025-06-24',
+    roles: ['admin','znbm'],
+  },
+  {
+    key: 'business-dept',
+    title: '业务部门监督台账',
+    total: 40, completed: 10, pending: 23, overdue: 12,
+    description: '更新了台账数据', lastUpdated: '2025-06-24',
+    roles: ['admin','znbm', 'ywb'],
+  }
+];
+
+import { useUserStore } from '@/stores/modules/user.ts';
+
+const userStore = useUserStore();
+// 2. 从 store 中获取当前用户的角色列表
+const { roles: userRoles } = storeToRefs(userStore);
+
+// 3. [核心] 创建计算属性，用于根据权限动态筛选台账
+const accessibleSystemLedgers = computed(() => {
+  const permittedLedgers = allSystemLedgers.filter(ledger => {
+    return userRoles.value.some(userRole => ledger.roles.includes(userRole));
+  });
+
+  return permittedLedgers
+});
 
 // 常用台账数据
 const commonLedgers = ref<CommonLedger[]>([
   { title: '第一责任监督台账', description: 'xxxxxxxxxxxxxxxxxxxx', lastUpdated: '2025-04-02' },
   { title: '一岗双责监督台账', description: 'xxxxxxxxxxxxxxxxxxxx', lastUpdated: '2025-04-02' },
-  { title: '纪委书记专项监督台账', description: 'xxxxxxxxxxxxxxxxxxxx', lastUpdated: '2025-04-02' },
+  { title: '纪委书记专责监督台账', description: 'xxxxxxxxxxxxxxxxxxxx', lastUpdated: '2025-04-02' },
   { title: '职能监督台账', description: 'xxxxxxxxxxxxxxxxxxxx', lastUpdated: '2025-04-02' },
   { title: '业务监督台账', description: 'xxxxxxxxxxxxxxxxxxxx', lastUpdated: '2025-04-02' },
   { title: '集团监督台账', description: 'xxxxxxxxxxxxxxxxxxxx', lastUpdated: '2025-04-02' },
@@ -197,6 +271,7 @@ const editSingleLedger = (ledger: CommonLedger) => {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 16px;
+    cursor: pointer;
   }
 
   .card-title {

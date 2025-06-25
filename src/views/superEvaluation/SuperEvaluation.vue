@@ -131,8 +131,10 @@ const fetchData = () => {
   }, 500);
 };
 
+const router = useRouter()
+
 const viewDepartmentDetails = (row: DepartmentStat) => {
-  console.log('查看部门详情:', row.departmentName);
+  router.push({ name: 'evaluation-detail' , query: { departmentName: row.departmentName}})
 };
 
 onMounted(() => {
