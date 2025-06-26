@@ -1,11 +1,10 @@
-// src/stores/user.ts
 
 import { ref, computed } from 'vue';
 import { defineStore } from 'pinia';
 import { ElMessage } from 'element-plus';
 // 导入我们刚刚创建的 API 函数和类型
 import { getRole , loginByTgt } from '@/api/base.ts'
-import { getToken, setToken } from '@/utils/auth.ts'
+import { getPortalToken, getToken, setPortalToken, setToken } from '@/utils/auth.ts'
 
 export const useUserStore = defineStore('user', () => {
   // 角色信息 和 权限
@@ -32,12 +31,15 @@ export const useUserStore = defineStore('user', () => {
   async function getUserInfo(): Promise<void> {
     try {
       const token = getToken();
+      const portalToken = getPortalToken()
 
-      if(token && token.startsWith('TGT')) {
+      if(portalToken && token) {
+        await fetchUserInfo()
+      } else {
         const response = await loginByTgt(token)
 
         if(response.code == 200) {
-          setToken(response.token)
+          setPortalToken(response.token)
 
           try {
             await fetchUserInfo()
@@ -45,8 +47,6 @@ export const useUserStore = defineStore('user', () => {
             console.log(e, e)
           }
         }
-      } else {
-        await fetchUserInfo()
       }
     } catch (e) {
       console.error(e)
@@ -56,6 +56,95 @@ export const useUserStore = defineStore('user', () => {
   async function fetchUserInfo(): Promise<void> {
     try {
       const response = await getRole();
+
+      // const response = {
+      //   "msg": "操作成功",
+      //   "code": 200,
+      //   "permissions": [
+      //     "*:*:*"
+      //   ],
+      //   "roles": [
+      //     "admin"
+      //   ],
+      //   "user": {
+      //     "searchValue": null,
+      //     "createBy": null,
+      //     "createTime": null,
+      //     "updateBy": null,
+      //     "updateTime": null,
+      //     "remark": "管理员",
+      //     "params": {},
+      //     "hrId": "1",
+      //     "deptId": "7798088947",
+      //     "bsUserId": "0",
+      //     "loginName": "admin",
+      //     "userName": "超级管理员001",
+      //     "email": "may33@chinatelecom.cn",
+      //     "phonenumber": "17720720781",
+      //     "hrCode": "71139901@VR",
+      //     "telephonenumber": null,
+      //     "idType": null,
+      //     "idCard": null,
+      //     "sex": "1",
+      //     "orderNum": "9999",
+      //     "birthday": "2021-04-16",
+      //     "age": null,
+      //     "nation": null,
+      //     "marryCategory": null,
+      //     "politicalStatus": null,
+      //     "joinPartyDate": null,
+      //     "registAddress": null,
+      //     "extJoinUnionDate": null,
+      //     "extKHShenfen": null,
+      //     "extGongZuoD": null,
+      //     "extManagePlace": null,
+      //     "extZPLY": null,
+      //     "workDate": null,
+      //     "extLJGZSJJZ": null,
+      //     "nationality": null,
+      //     "employType": "0",
+      //     "employeeStatus": "3",
+      //     "serviceType": "0",
+      //     "oIdJobPost": null,
+      //     "pOIdEmpAdmin": "0",
+      //     "pOIdEmpReserve2": "0",
+      //     "projectId": "1784508127491887105",
+      //     "projectId2": "1784508127491887105",
+      //     "province": "福建省",
+      //     "city": "福州市",
+      //     "userDeptName": "综管部门",
+      //     "post": "超级管理员",
+      //     "companyName": "天翼云公司",
+      //     "userType": "1",
+      //     "provinceCode": "350000",
+      //     "cityCode": "001",
+      //     "companyCode": "001",
+      //     "lastLoginTime": "2025-06-25 16:47:01",
+      //     "lastLoginIp": "192.168.23.251",
+      //     "thirdDeptName": "产品设计部",
+      //     "avatar": null,
+      //     "password": "$2a$10$fSvPZZYS9DSlQBOKrpEWs.W8nDrvBeU2jS2zlJImSsZwTetfvb/Hq",
+      //     "salt": null,
+      //     "status": "0",
+      //     "imId": "0",
+      //     "ypId": "ac110003-7acd-1903-817a-f03c7e88105f",
+      //     "delFlag": "0",
+      //     "passwordModifiedDate": null,
+      //     "lastFailedLoginDate": null,
+      //     "failedLoginAttempts": 0,
+      //     "lockoutDate": null,
+      //     "dept": null,
+      //     "userExt": null,
+      //     "userAttr": null,
+      //     "projects": null,
+      //     "supportDepts": null,
+      //     "deptments": null,
+      //     "depts": null,
+      //     "deptIds": null,
+      //     "roleIds": null,
+      //     "admin": false
+      //   }
+      // }
 
       if (response.code === 200 && response.user) {
         // [核心] 只提取并存储 user 和 roles 两个字段

@@ -3,7 +3,11 @@
   "extends": "@vue/tsconfig/tsconfig.dom.json",
 
   // 指定此配置文件应用于哪些文件
-  "include": ["src/**/*", "src/**/*.vue"],
+  "include": [
+    "src/**/*",
+    "src/**/*.vue",
+    "src/**/*.d.ts"
+  ],
   // 指定要排除的文件
   "exclude": ["src/**/__tests__/*"],
 
@@ -20,7 +24,6 @@
     },
     // ---- 解决 "Cannot find name 'process'" 问题的关键 ----
     // 明确告诉 TypeScript，在检查代码时，除了 DOM 类型外，也要识别 Node.js 的全局类型
-    "types": ["node"],
 
     // ---- 其他推荐的现代配置 ----
     // 编译目标为最新的 ECMAScript 版本

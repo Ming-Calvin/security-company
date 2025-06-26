@@ -149,16 +149,28 @@
         <el-table-column label="操作" align="center" width="150" fixed="right">
           <template #default="scope">
             <div style="display: flex">
-              <el-button link type="primary" @click="handleSubmit(scope.row)">提交研判</el-button>
-              <el-dropdown>
+              <el-button link
+                         type="primary"
+                         v-if="scope.row.status === 'draft'"
+                         @click="handleSubmit(scope.row)">
+                提交研判
+              </el-button>
+              <el-button link
+                         type="primary"
+                         v-if="scope.row.status !== 'draft'"
+                         @click="handleDetail(scope.row)">
+                详情
+              </el-button>
+              <el-dropdown v-if="scope.row.status === 'draft'">
                 <el-button link type="primary" ml-2>
                   更多<el-icon class="el-icon--right"><arrow-down /></el-icon>
                 </el-button>
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item @click="handleEdit(scope.row)">编辑</el-dropdown-item>
-                    <el-dropdown-item v-if="scope.row.status != ''"
-                                      @click="handleDelete(scope.row)"
+                    <el-dropdown-item @click="handleEdit(scope.row)">
+                      编辑
+                    </el-dropdown-item>
+                    <el-dropdown-item @click="handleDelete(scope.row)"
                                       style="color: red;">
                       删除
                     </el-dropdown-item>
@@ -199,8 +211,6 @@ import { Search, Refresh, Plus, Upload, Position, ArrowDown } from '@element-plu
 import { getProblemCount, getProblemList, problemWarehouseRemove } from '@/api/problemDatabase.ts'
 import type {ProblemCountData, ProblemCountTab, ProblemListParams, ProblemTableItem } from '@/types/problemDatabase.ts'
 import { getSuperviseFieldList } from '@/api/systemConfiguration.ts'
-import type { SuperviseFieldItem } from '@/types/systemConfiguration.ts'
-import { getRole } from '@/api/base.ts'
 
 // 路由
 const router = useRouter();
@@ -366,6 +376,10 @@ const handleSelectionChange = (selection: ProblemTableItem[]) => {
 // 提交研判
 const handleSubmit = (row: ProblemTableItem) => {
   router.push({ name: 'problem-detail', query: { id: row.id, opera: 'submit' } });
+};
+// 详情
+const handleDetail = (row: ProblemTableItem) => {
+  router.push({ name: 'problem-detail', query: { id: row.id, opera: 'detail' } });
 };
 // 编辑
 const handleEdit = (row: ProblemTableItem) => {

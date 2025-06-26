@@ -17,7 +17,9 @@ import type {
   ProblemDetail,
   ProblemDetailWithStartFlow,
   PendingListResponse,
-  PendingListParams, ProblemDetailsParams
+  PendingListParams,
+  ProblemDetailsParams,
+  ProblemDatabaseSaveResponse
 } from '../types/problemDatabase.ts'
 
 import qs from 'qs'
@@ -52,7 +54,7 @@ export function problemWarehouseRemove(id: string) {
 
 // 保存问题
 export function saveProblem(data: ProblemSavePayload) {
-  return request<ApiResponse<any>>({
+  return request<ProblemDatabaseSaveResponse>({
     url: '/core/problemWarehouse/problemWarehouse/save',
     method: 'post',
     data: data,
@@ -61,7 +63,7 @@ export function saveProblem(data: ProblemSavePayload) {
 
 // 根据id查询详情
 export function getProblemDetails(params: ProblemDetailsParams) {
-  return request<ApiResponse<ProblemDetail>>({
+  return request<ProblemDetail>({
     url: '/core/problemWarehouse/problemWarehouse/getJson',
     method: 'get',
     params

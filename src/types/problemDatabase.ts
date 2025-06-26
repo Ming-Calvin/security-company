@@ -73,34 +73,32 @@ export interface ProblemListParams {
 // 新增问题库
 export interface ProblemSavePayload {
   // --- 表单中存在的字段 ---
-  fDiscoverTime: string;
-  fProblemType: string;
-  fProblemSource: string;
-  fInspectionItems: string;
-  fProblemDescription: string;
-  fInspectionDept: string;
-  fDeptSubjectInspection: string;
-  fIsCommit: '0' | '1';
-  fLeader: string;
-  fAdviceTime: string;
-  fIsIllegal: '0' | '1';
-  fIsAssetTransfer: '0' | '1';
-  fOtherAdvice: string;
-  fDocuments: string;
-  // 检查部门ID
-  fInspectionDeptId?: string;
-  // 被检查部门ID
-  fDeptSubjectInspectionId?: string;
+  fDiscoverTime: string;            // 发现问题时间
+  fProblemType: string;             // 问题类型
+  fProblemSource: string;           // 问题来源
+  fInspectionItems: string;         // 检查事项
+  fProblemDescription: string;      // 问题描述
+  fInspectionDept: string;          // 检查部门
+  fDeptSubjectInspection: string;   // 被检查部门
+  fIsCommit: '0' | '1' | string;    // 是否提交 (0:否, 1:是)
+  fLeader: string;                  // 研判领导
+  fLeaderId: string;                // 研判领导ID
+  fAdviceTime: string;              // 整改建议时间
+  fIsIllegal: '0' | '1' | string;   // 是否违规 (0:否, 1:是)
+  fIsAssetTransfer: '0' | '1' | string;      // 是否涉及资产移交 (0:否, 1:是)
+  fOtherAdvice: string;             // 其他建议
+  fDocuments: string;               // 佐证材料
+  fInspectionDeptId?: string;       // 检查部门ID
+  fDeptSubjectInspectionId?: string; // 被检查部门ID
 
   // --- 表单中不存在的字段 ---
-  id?: string;
-  fWorkNo?: string;
-  fEntryTime?: string;
-  fProposer?: string;
-  fProposerId?: string;
-  fLeaderId?: string;
-  fCharger?: string;
-  fChargerId?: string;
+  id?: string;                        // 主键ID
+  fWorkNo?: string;                   // 工单号 (自动生成)
+  fEntryTime?: string;                // 录入时间
+  fProposer?: string;                 // 提出人
+  fProposerId?: string;               // 提出人ID
+  fCharger?: string;                  // 整改责任人
+  fChargerId?: string;                // 整改责任人ID
 }
 
 // 接口返回类型
@@ -205,4 +203,11 @@ export interface PendingListResponse {
 export interface ProblemDetailsParams {
   id?: string;
   procInstId?: string;
+}
+
+// 保存问题库返回
+export interface ProblemDatabaseSaveResponse {
+  code: number;
+  msg: string;
+  data: string;
 }

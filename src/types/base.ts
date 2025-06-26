@@ -40,6 +40,14 @@ export interface PeopleSelectTreeResult {
   isParent: 'true' | 'false';
 }
 
+// 部门选择器传参
+export interface PeopleSelectDeptParams {
+  page: number;
+  size: number;
+  deptId?: string | number;
+  name?: string
+}
+
 // 人员传参
 export interface PeopleSelectUserParams {
   page: number;

@@ -1,7 +1,7 @@
 // 导入 InternalAxiosRequestConfig
 import axios, { type InternalAxiosRequestConfig } from 'axios';
 import type { AxiosInstance, AxiosResponse } from 'axios';
-import { getToken } from '@/utils/auth.ts'
+import { getToken, getPortalToken } from '@/utils/auth.ts'
 
 const instance: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -13,10 +13,14 @@ const instance: AxiosInstance = axios.create({
 instance.interceptors.request.use(
   // 使用正确的类型
   (config: InternalAxiosRequestConfig) => {
+
     // 获取token
     const token = getToken()
+    const portalToken = getPortalToken();
 
-    if (token) {
+    if(config.isPortal && portalToken) {
+      config.headers.Authorization = `Bearer ${portalToken}`;
+    } else if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
 

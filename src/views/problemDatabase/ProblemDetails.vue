@@ -112,8 +112,6 @@ import FlowChartModal from '@/components/FlowChartModal.vue'
 import type { Node, Edge, Position } from '@vue-flow/core';
 import { ElMessage } from 'element-plus'
 import { getTaskHandleDetailByTaskId } from '@/api/base.ts'
-import PeopeleSelect from '@/components/PeopeleSelect.vue'
-import request from '@/services/request';
 
 interface AttachmentFile {
   name: string;

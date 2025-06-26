@@ -7,12 +7,6 @@ import Layout from '@/layout/index.vue'; // 引入 Layout 组件
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    // 登录页面是独立的，不使用 Layout
-    // {
-    //   path: '/login',
-    //   name: 'login',
-    //   component: () => import('../views/Login.vue'),
-    // },
     {
       path: '/',
       component: Layout,
@@ -82,12 +76,6 @@ const router = createRouter({
       name: 'ledger-detail',
       component: () => import('../views/problemLedger/LedgerDetail.vue'),
     },
-    // (可选) 404 页面
-    // {
-    //   path: '/:pathMatch(.*)*',
-    //   name: 'NotFound',
-    //   component: () => import('../views/NotFound.vue'),
-    // }
   ],
 });
 
