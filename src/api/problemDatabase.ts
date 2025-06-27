@@ -125,7 +125,7 @@ export function getOrgTable(query: PeopleSelectUserParams) {
 
 // 发起接口
 export function problemWarehouseCommit(data: ProblemDetailWithStartFlow) {
-  return request<ApiResponse<any>>({
+  return request<ApiResponse<unknown>>({
     url: '/core/problemWarehouse/problemWarehouse/commit',
     method: 'post',
     data

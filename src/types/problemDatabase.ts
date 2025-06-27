@@ -79,12 +79,12 @@ export interface ProblemSavePayload {
   fProblemDescription: string;      // 问题描述
   fInspectionDept: string;          // 检查部门
   fDeptSubjectInspection: string;   // 被检查部门
-  fIsCommit: '0' | '1' | string;    // 是否提交 (0:否, 1:是)
+  fIsCommit: 0 | 1 | string;    // 是否提交 (0:否, 1:是)
   fLeader: string;                  // 研判领导
   fLeaderId: string;                // 研判领导ID
-  fAdviceTime: string;              // 整改建议时间
-  fIsIllegal: '0' | '1' | string;   // 是否违规 (0:否, 1:是)
-  fIsAssetTransfer: '0' | '1' | string;      // 是否涉及资产移交 (0:否, 1:是)
+  fAdviceTime: string | Date;              // 整改建议时间
+  fIsIllegal: 0 | 1 | string;   // 是否违规 (0:否, 1:是)
+  fIsAssetTransfer: 0 | 1 | string;      // 是否涉及资产移交 (0:否, 1:是)
   fOtherAdvice: string;             // 其他建议
   fDocuments: string;               // 佐证材料
   fInspectionDeptId?: string;       // 检查部门ID
@@ -104,9 +104,9 @@ export interface ProblemSavePayload {
 export interface ProblemDetail {
   id: string;
   refId: string;
-  fDiscoverTime: string;
+  fDiscoverTime: string | Number;
   fEntryTime: string;
-  fAdviceTime: string;
+  fAdviceTime: string | Number;
   fInspectionDept: string;
   fInspectionDeptId: string;
   fDeptSubjectInspection: string;

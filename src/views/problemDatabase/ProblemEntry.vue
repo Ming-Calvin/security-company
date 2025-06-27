@@ -31,7 +31,7 @@
                 v-model="formData.fDiscoverTime"
                 type="date"
                 placeholder="请选择发现问题时间"
-                value-format="YYYY-MM-DD"
+                value-format="x"
                 class="!w-full"
                 :disabled-date="afterToday"
               />
@@ -134,7 +134,7 @@
                 v-model="formData.fAdviceTime"
                 type="date"
                 placeholder="请选择建议整改时限"
-                value-format="YYYY-MM-DD"
+                value-format="x"
                 class="!w-full"
                 :disabled-date="beforeToday"
               />
@@ -154,8 +154,8 @@
           <el-col :span="12">
             <el-form-item label="是否涉嫌违纪或职务违法、职务犯罪等问题" prop="fIsIllegal">
               <el-radio-group v-model="formData.fIsIllegal">
-                <el-radio value="0">否</el-radio>
-                <el-radio value="1">是</el-radio>
+                <el-radio :value="0">否</el-radio>
+                <el-radio :value="1">是</el-radio>
               </el-radio-group>
             </el-form-item>
           </el-col>
@@ -163,8 +163,8 @@
           <el-col :span="12">
             <el-form-item label="是否可能造成国有资产流失、资金转移等重大风险" prop="fIsAssetTransfer">
               <el-radio-group v-model="formData.fIsAssetTransfer">
-                <el-radio value="0">否</el-radio>
-                <el-radio value="1">是</el-radio>
+                <el-radio :value="0">否</el-radio>
+                <el-radio :value="1">是</el-radio>
               </el-radio-group>
             </el-form-item>
           </el-col>
@@ -216,7 +216,7 @@
 <script setup lang="ts">
 // Vue
 import { ref, reactive } from 'vue'
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 
 // el-plus
 import { ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
@@ -225,7 +225,7 @@ import { Plus, Link } from '@element-plus/icons-vue';
 import type { TreeNode } from 'element-plus/es/components/tree/src/tree.type';
 
 // api
-import { getTreeList, getOrgTable, saveProblem } from '@/api/problemDatabase.ts'
+import { getTreeList, getOrgTable, saveProblem, getProblemDetails } from '@/api/problemDatabase.ts'
 import type { ProblemSavePayload } from '@/types/problemDatabase.ts'
 
 // 人员选择器
@@ -238,9 +238,11 @@ import type {
 
 // 上传组件
 import type { UploadUserFile, UploadProps } from 'element-plus';
+import { deepClone } from '@/utils'
 
 // 路由
 const router = useRouter();
+const route = useRoute()
 
 // =========== 头部 ===========
 // 返回上一页
@@ -307,12 +309,12 @@ const formData = reactive<ProblemSavePayload>({
   fInspectionDeptId: '',
   fDeptSubjectInspection: '',
   fDeptSubjectInspectionId: '',
-  fIsCommit: '0',
+  fIsCommit: 0,
   fLeader: '',
   fLeaderId: '',
   fAdviceTime: '',
-  fIsIllegal: '0',
-  fIsAssetTransfer: '0',
+  fIsIllegal: 0,
+  fIsAssetTransfer: 0,
   fOtherAdvice: '',
   fDocuments: ''
 });
@@ -432,6 +434,34 @@ const handleChange: UploadProps['onChange'] = (uploadFile, uploadFiles) => {
   formData.fDocuments = JSON.stringify(uploadList)
 }
 
+// =========== 问题详情 ===========
+// 获取问题详情
+const getProblemDetailData = async () => {
+  try {
+    loading.value = true;
+
+    if(route.query.id && route.query.opera === 'edit') {
+      const response = await getProblemDetails({ id: route.query.id, });
+
+      if (response.success) {
+        const deepCloneResponse = deepClone(response.data)
+
+        Object.assign(formData, deepCloneResponse)
+      } else {
+        ElMessage.error('获取详情失败');
+      }
+    }
+
+  } catch (err) {
+    ElMessage.error('失误：', err);
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(() => {
+  getProblemDetailData();
+})
 </script>
 
 <style lang="scss" scoped>
