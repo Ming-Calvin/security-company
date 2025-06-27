@@ -266,7 +266,12 @@ const handleSubmit = async () => {
             type: 'warning',
           }
         );
+      } catch (e) {
+        console.error(e)
+        ElMessage.error('取消保存');
+      }
 
+      try {
         // 调用 saveProblem 函数，传入表单数据
         const response = await saveProblem(formData);
 

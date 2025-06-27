@@ -1,5 +1,4 @@
 import type { PageResult } from './base.ts'
-import { getProblemDetails } from '@/api/problemDatabase.ts'
 
 // 问题的数量统计
 export interface ProblemCountData {

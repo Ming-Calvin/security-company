@@ -98,6 +98,7 @@ interface MenuItem {
   index: string;
   title: string;
   icon: Component;
+  roles: string[];
 }
 
 // 角色标识符说明：
@@ -153,11 +154,6 @@ const accessibleMenuItems = computed(() => {
     // some() 方法在这里非常适合
     return userRoles.value.some(userRole => menuItem.roles!.includes(userRole));
   });
-});
-
-// --- 生命周期 ---
-onBeforeMount(() => {
-  activeMenu.value = route.path
 });
 </script>
 
