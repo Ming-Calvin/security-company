@@ -129,6 +129,7 @@ import type { Node, Edge } from '@vue-flow/core';
 
 // until
 import { formatDate } from '@/utils/index';
+import { rectificationBookCommit } from '@/api/problemLedger.ts'
 
 // 路由
 const router = useRouter();
@@ -146,7 +147,7 @@ const extractedBtnList = ref<ExtractedBtn[]>([])
 const getExtractedBtnList = async () => {
   const params = {
     defId: "2490000000310172",
-    nodeId: route.query.nodeId || 'UserTask1',
+    nodeId: route.query.nodeId,
   }
 
   try {
@@ -159,8 +160,7 @@ const getExtractedBtnList = async () => {
         nodeId: nextNodeId,
         componentName: component,
         nodeName: item.beforeScript,
-        buttonName: item.name,
-        type: 'problemDatabase'
+        buttonName: item.name
       }
     })
   } catch (e) {
@@ -264,8 +264,6 @@ const getProblemDetailData = async () => {
 // 提交组件
 const SubmitComponentRef = ref<InstanceType<typeof SubmitComponent>>()
 
-const nodeId = ref('')
-
 const currentNodeBtnData = ref('')
 
 // 打开弹窗
@@ -288,14 +286,14 @@ const handleModalConfirm = async (submitData: SubmitPayload) => {
     submitForm = {
       ...details.value,
       DoNextParamExtObject: {
-        nodeUsers: JSON.stringify([{ nodeId: nodeId.value, executors: executorsToSubmit }]),
+        nodeUsers: JSON.stringify([{ nodeId: currentNodeBtnData.value.nodeId, executors: executorsToSubmit }]),
         account: "admin",
         taskId: route.query.taskId as string,
         actionName: "agree",
         opinion: submitData.opinion,
         formType: "inner",
         jumpType: "select",
-        destination: nodeId.value,
+        destination: currentNodeBtnData.value.nodeId,
         opinionFiles: [],
         formName: currentNodeBtnData.value.nodeName
       }
@@ -314,11 +312,6 @@ const handleModalConfirm = async (submitData: SubmitPayload) => {
       }
     };
   }
-
-
-  console.log(submitForm, 'submitForm')
-  return
-
 
   try {
     loading.value = true;

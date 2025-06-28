@@ -1,28 +1,25 @@
 <template>
-  <div class="progress-details-container">
+  <div p-4>
     <el-card class="details-card">
       <template #header>
         <div class="card-header">
-          <el-page-header @back="handleGoBack" class="page-header-title">
+          <el-page-header @back="handleGoBack"
+                          class="page-header-title">
             <template #content>
               <span class="font-bold">督办详情</span>
             </template>
           </el-page-header>
+
           <div class="header-actions">
             <el-button v-for="(item, index) in extractedBtnList"
                        type="primary"
                        :key="index"
-                       @click="openApprovalModal(item.nodeId)"
+                       @click="openApprovalModal(item)"
             >
-              {{ item.nodeName }}
+              {{ item.buttonName }}
             </el-button>
-            <el-button type="primary" v-if="!route.query.taskId" @click="openApprovalModal('UserTask2')">提交</el-button>
-            <el-button type="primary" @click="openUpdateDialog()">更新进展</el-button>
-            <el-button type="primary" @click="openEvaluationModal()">纪委评价</el-button>
-<!--            <el-button>流转记录</el-button>-->
+            <el-button>流转记录</el-button>
             <el-button @click="isFlowModalVisible = true">流程图</el-button>
-            <el-button>编辑</el-button>
-            <el-button>删除</el-button>
           </div>
         </div>
       </template>
@@ -33,19 +30,23 @@
             <div class="summary-label">整改状态</div>
             <div class="summary-value status-overdue">{{ details.rectifyStatusText }}</div>
           </div>
+
           <div class="summary-item">
             <div class="summary-label">监督状态</div>
             <div class="summary-value">{{ details.superviseStatusText }}</div>
           </div>
+
           <div class="summary-item">
             <div class="summary-label">整改耗时</div>
             <div class="summary-value">{{ details.rectifyDuration }}</div>
           </div>
+
           <div class="summary-item">
             <div class="summary-label">总体评分</div>
             <div class="summary-value">{{ details.overallScore }}</div>
           </div>
         </div>
+
         <el-divider />
 
         <div class="section">
@@ -54,13 +55,25 @@
             <h3 class="section-title">基础信息</h3>
           </div>
           <el-descriptions :column="3" border>
-            <el-descriptions-item label="监督事项" :span="3">{{ details.fSuperviseItems }}</el-descriptions-item>
-            <el-descriptions-item label="事项内容" :span="3">{{ details.fProblemDescription }}</el-descriptions-item>
+            <el-descriptions-item label="监督事项" :span="3">
+              {{ details.fSuperviseItems }}
+            </el-descriptions-item>
+
+            <el-descriptions-item label="事项内容" :span="3">
+              {{ details.fProblemDescription }}
+            </el-descriptions-item>
+
             <el-descriptions-item label="关联台账" :span="3">
               <div class="link-list">
-                <el-link v-for="book in details.relatedBooks" :key="book.id" type="primary" @click="viewBook(book.id)">{{ book.name }}</el-link>
+                <el-link v-for="book in details.relatedBooks"
+                         :key="book.id"
+                         type="primary"
+                         @click="viewBook(book.id)">
+                  {{ book.name }}
+                </el-link>
               </div>
             </el-descriptions-item>
+
             <el-descriptions-item label="编号">{{ details.id }}</el-descriptions-item>
             <el-descriptions-item label="监督类型">{{ details.fSuperviseType }}</el-descriptions-item>
             <el-descriptions-item label="监督来源">{{ details.fSuperviseSource }}</el-descriptions-item>
@@ -71,13 +84,17 @@
             <el-descriptions-item label="监督责任人">{{ details.fSuperviseUser }}</el-descriptions-item>
             <el-descriptions-item label="是否可能造成国有资产流失、资金转移等重大风险">{{ details.fIsAssetTransfer ? '是' : '否' }}</el-descriptions-item>
           </el-descriptions>
+
           <div class="attachment-section">
             <span class="attachment-label">佐证材料:</span>
             <div class="attachment-list">
-              <div v-for="(file, index) in details.attachments" :key="index" class="attachment-item">
+              <div v-for="(file, index) in details.attachments"
+                   :key="index"
+                   class="attachment-item">
                 <el-icon><Document /></el-icon>
                 <span class="file-name">{{ file.name }}</span>
                 <span class="file-size">{{ file.size }}</span>
+
                 <el-button link type="primary" :icon="Download" class="download-btn" />
               </div>
             </div>
@@ -89,6 +106,7 @@
             <el-icon color="#67c23a"><SuccessFilled /></el-icon>
             <h3 class="section-title">整改情况</h3>
           </div>
+
           <el-descriptions :column="3">
             <el-descriptions-item label="整改举措" :span="3">{{ details.fRectifyMeasure }}</el-descriptions-item>
             <el-descriptions-item label="整改时限">{{ formatTimestamp(details.fRectifyPlantime) }}</el-descriptions-item>
@@ -109,24 +127,25 @@
               </template>
             </el-table-column>
 
-            <el-table-column prop="fUpdateContent" label="更新进展内容" min-width="250" show-overflow-tooltip />
+            <el-table-column prop="fUpdateContent"
+                             label="更新进展内容"
+                             min-width="250"
+                             show-overflow-tooltip />
 
-            <el-table-column label="佐证材料" min-width="300">
-              <template #default="scope">
-                <div class="attachment-list">
-                  <el-link
-                    v-for="(file, index) in scope.row.attachments"
-                    :key="index"
-                    :href="file.url"
-                    target="_blank"
-                    type="primary"
-                    :icon="Document"
-                  >
-                    {{ file.name }}
-                  </el-link>
+            <div class="attachment-section">
+              <span class="attachment-label">佐证材料:</span>
+              <div class="attachment-list">
+                <div v-for="(file, index) in details.attachments"
+                     :key="index"
+                     class="attachment-item">
+                  <el-icon><Document /></el-icon>
+                  <span class="file-name">{{ file.name }}</span>
+                  <span class="file-size">{{ file.size }}</span>
+
+                  <el-button link type="primary" :icon="Download" class="download-btn" />
                 </div>
-              </template>
-            </el-table-column>
+              </div>
+            </div>
           </el-table>
         </div>
 
@@ -136,7 +155,7 @@
             <h3 class="section-title">监督与评价</h3>
           </div>
 
-          <el-table :data="evaluationList" style="width: 100%" border>
+          <el-table :data="evaluationList" border>
 
             <el-table-column label="评价人" width="220">
               <template #default="scope">
@@ -150,117 +169,112 @@
               </template>
             </el-table-column>
 
-            <el-table-column prop="fEvaluateScore" label="整改评分" width="120" align="center" />
+            <el-table-column prop="fEvaluateScore"
+                             label="整改评分"
+                             width="120"
+                             align="center" />
 
-            <el-table-column prop="fEvaluateContent" label="整改成效" min-width="300" show-overflow-tooltip />
+            <el-table-column prop="fEvaluateContent"
+                             label="整改成效"
+                             min-width="300"
+                             show-overflow-tooltip />
 
           </el-table>
-      </div>
+        </div>
       </div>
     </el-card>
   </div>
 
-  <UpdateProgressModal
-    v-if="isModalVisible"
-    v-model="isModalVisible"
-    :record-id="currentRecordId"
-    @success="handleProgressSuccess"
-  />
+  <UpdateProgressModal v-if="isModalVisible"
+                       v-model="isModalVisible"
+                       :record-id="currentRecordId"
+                       @success="getRectProcessData" />
 
-  <EvaluationModal
-    v-if="isEvaluationModalVisible"
-    v-model="isEvaluationModalVisible"
-    :record-id="currentRecordId"
-    @success="handleEvaluationSuccess"
-  />
+  <EvaluationModal v-if="isEvaluationModalVisible"
+                   v-model="isEvaluationModalVisible"
+                   :record-id="currentRecordId"
+                   @success="getRectEvaluationData" />
 
-  <SubmitComponent
-    ref="submitComponent"
-    v-if="isApprovalModalVisible"
-    v-model="isApprovalModalVisible"
-    @confirm="handleModalConfirm"
-  />
+  <SubmitComponent ref="SubmitComponentRef"
+                   v-if="isApprovalModalVisible"
+                   v-model="isApprovalModalVisible"
+                   @confirm="handleModalConfirm" />
 
-  <FlowChartModal
-    v-if="isFlowModalVisible"
-    v-model="isFlowModalVisible"
-    :nodes="complexNodes"
-    :edges="complexEdges"
-    title="完整业务流程"
+  <FlowChartModal v-if="isFlowModalVisible"
+                  v-model="isFlowModalVisible"
+                  :nodes="complexNodes"
+                  :edges="complexEdges"
+                  title="监督台账"
   />
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+// vue
+import { ref, onMounted, provide } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
+
+// el-plus
 import { InfoFilled, SuccessFilled, Document, Download, WarningFilled } from '@element-plus/icons-vue';
-import {
-  getRectEvaluationList,
-  getRectificationRecordById,
-  getRectProcessList,
-  rectificationBookCommit
-} from '@/api/problemLedger.ts'
-import { getTaskHandleDetailByTaskId } from '@/api/base.ts'
+
+// api
+import { getRectEvaluationList, getRectificationRecordById, getRectProcessList, rectificationBookCommit } from '@/api/problemLedger.ts'
+import { getNodeSet, getTaskHandleDetailByTaskId } from '@/api/base.ts'
+import type { Attachment, ProblemDetails } from '@/types/problemLedger.ts'
 
 // 更新进展组件
 import UpdateProgressModal from './UpdateProgressModal.vue';
 // 评价组件
-import EvaluationModal from './EvaluationModal.vue';
-// import type { RectProcessListParams } from '@/services/api/problemLedger/problemDatabase.ts'
-
+import EvaluationModal from '../submitComponent/EvaluationModal.vue';
+// 流程图组件
 import FlowChartModal from '@/components/FlowChartModal.vue';
 import type { Node, Edge } from '@vue-flow/core';
+// 提交组件
 import SubmitComponent from '@/components/SubmitComponent.vue'
+import type { ExtractedBtn } from '@/types/base.ts'
 
-// 更新进展列表
-const progressList = ref([])
-// 评价列表
-const evaluationList = ref([])
-
-
-// --- 类型定义 ---
-interface Attachment {
-  name: string;
-  size: string;
-  url: string;
-}
-
-interface FullProblemDetails {
-  // 顶部摘要
-  rectifyStatusText: string;
-  superviseStatusText: string;
-  rectifyDuration: string;
-  overallScore: string | number;
-
-  // 基础信息
-  fSuperviseItems: string;
-  fProblemDescription: string;
-  relatedBooks: { id: string, name: string }[];
-  id: string;
-  fSuperviseType: string;
-  fSuperviseSource: string;
-  fRectifyDept: string;
-  fRectifyUser: string;
-  fIsIllegal: 0 | 1;
-  fSuperviseDept: string;
-  fSuperviseUser: string;
-  fIsAssetTransfer: 0 | 1;
-  attachments: Attachment[];
-
-  // 整改情况
-  fRectifyMeasure: string;
-  fRectifyPlantime: number;
-  fRectifyStarttime: number;
-  fRectifyEndtime: number;
-}
-
-
-// --- 响应式状态 ---
+// =========== 路由 ===========
 const router = useRouter();
 const route = useRoute();
-const loading = ref(true);
-const details = ref<FullProblemDetails>({} as FullProblemDetails);
 
+// =========== 头部 ===========
+// 返回上一页
+const handleGoBack = () => {
+  router.push({ name: 'super-agency', query: { activeMenu: '监督台账' } });
+};
+
+const extractedBtnList = ref<ExtractedBtn[]>([])
+
+// 获取展示按钮
+const getExtractedBtnList = async () => {
+  const params = {
+    defId: "2490000000690023",
+    nodeId: route.query.nodeId,
+  }
+
+  try {
+    const response = await getNodeSet(params)
+
+    extractedBtnList.value = response.map(item => {
+      const [nextNodeId, component = null] = item.alias.split('_')
+
+      return {
+        nodeId: nextNodeId,
+        componentName: component,
+        nodeName: item.beforeScript,
+        buttonName: item.name,
+      }
+    })
+
+    console.log(extractedBtnList, 'extractedBtnList')
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+// =========== 表单 ===========
+const loading = ref(true);
+const details = ref<ProblemDetails>({} as ProblemDetails);
+const currentRecordId = route.query.id || route.query.taskId
 
 // 获取问题详情
 const getLedgerDetailData = async () => {
@@ -284,6 +298,31 @@ const getLedgerDetailData = async () => {
     loading.value = false;
   }
 };
+
+// 时间转换函数
+const formatTimestamp = (timestamp: number) => {
+  if (!timestamp) return '-';
+  const date = new Date(timestamp);
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+// 关联台账
+const viewBook = (id: string) => {
+  // 跳转相关台账页
+};
+
+// =========== 更新进展 ===========
+// 更新进展列表
+const progressList = ref([])
+
+// 弹框
+const isModalVisible = ref(false);
+const openUpdateDialog = () => {
+  isModalVisible.value = true;
+}
 
 // 获取更新进展详情
 const getRectProcessData = async () => {
@@ -311,6 +350,16 @@ const getRectProcessData = async () => {
   }
 };
 
+// =========== 评价 ===========
+// 评价列表
+const evaluationList = ref([])
+
+// 弹框
+const isEvaluationModalVisible = ref(false);
+const openEvaluationModal = () => {
+  isEvaluationModalVisible.value = true;
+}
+
 // 获取监督评价详情
 const getRectEvaluationData = async () => {
   const queryParams: RectProcessListParams = {
@@ -337,42 +386,7 @@ const getRectEvaluationData = async () => {
   }
 };
 
-// --- 工具函数 ---
-const formatTimestamp = (timestamp: number) => {
-  if (!timestamp) return '-';
-  return new Date(timestamp).toLocaleDateString('zh-CN');
-};
-
-// --- 事件处理 ---
-const handleGoBack = () => router.back();
-const viewBook = (id: string) => alert(`跳转到台账详情: ${id}`);
-
-// --- 更新进展 ---
-// 当前记录ID
-const currentRecordId = route.query.id || route.query.taskId
-const isModalVisible = ref(false);
-
-const openUpdateDialog = () => {
-  isModalVisible.value = true;
-}
-
-// --评价--
-const isEvaluationModalVisible = ref(false);
-const openEvaluationModal = () => {
-  isEvaluationModalVisible.value = true;
-}
-
-// 整改更新
-const handleProgressSuccess = () => {
-  getRectProcessData();
-};
-
-// 评价更新
-const handleEvaluationSuccess = () => {
-  getRectEvaluationData();
-}
-
-/*------流程图------*/
+// =========== 流程图 ===========
 const isFlowModalVisible = ref(false);
 
 const complexNodes = ref<Node[]>([
@@ -410,121 +424,97 @@ const complexEdges = ref<Edge[]>([
 ]);
 
 
-/*------提交------*/
-
+// =========== 提交 ===========
 const isApprovalModalVisible = ref(false);
-// 提交组件
-const submitComponent = ref<InstanceType<typeof SubmitComponent> | null>(null)
 
-const nodeId = ref('')
+// 提交组件
+const SubmitComponentRef = ref<InstanceType<typeof SubmitComponent> | null>(null)
+
+const currentNodeBtnData = ref('')
 
 // 打开弹窗
-const openApprovalModal = (id?: string) => {
-  isApprovalModalVisible.value = true;
-  submitComponent.value?.init(id);
-  nodeId.value = id
-};
+const openApprovalModal = async (item: ExtractedBtn) => {
+  if(item.buttonName === '更新进展') {
+    openUpdateDialog()
+    return
+  }
 
-const handleModalConfirm = (submitData: { executors: { id: string, name: string }, opinion: string }) => {
-  submit(submitData)
+  isApprovalModalVisible.value = true
+  await nextTick();
+  SubmitComponentRef.value?.init(item);
+  currentNodeBtnData.value = item
 };
 
 // 提交研判
-const submit = async (submitData: { executors: { id: string, name: string }, opinion: string }) => {
-  // 提交数据
-  let submitForm = {}
+const handleModalConfirm = async (submitData: SubmitPayload) => {
+  // 提交表单
+  let submitForm: SubmitPayload;
 
-  if(route.query.taskId) {
-    const DoNextParamExtObject =  {
-      "nodeUsers": JSON.stringify([{nodeId: nodeId.value, executors: [{...submitData.executors}]}]),
-      "account": "admin",
-      "taskId": route.query.taskId,
-      "actionName": "agree",
-      "opinion": submitData.opinion,
-      "formType": "inner",
-      "jumpType": "select",
-      "destination": nodeId.value,
-      "opinionFiles": [],
-      "formName": ""
-    }
+  const executorsToSubmit: Executor[] = [submitData.executors];
 
-    submitForm = { ...details.value , DoNextParamExtObject: DoNextParamExtObject }
+  if (route.query.taskId) {
+    // --- 审批流程中的提交 ---
+    submitForm = {
+      ...details.value,
+      DoNextParamExtObject: {
+        nodeUsers: JSON.stringify([{ nodeId: currentNodeBtnData.value.nodeId, executors: executorsToSubmit }]),
+        account: "admin",
+        taskId: route.query.taskId as string,
+        actionName: "agree",
+        opinion: submitData.opinion,
+        formType: "inner",
+        jumpType: "select",
+        destination: currentNodeBtnData.value.nodeId,
+        opinionFiles: [],
+        formName: currentNodeBtnData.value.nodeName
+      }
+    };
   } else {
-    const startFlowParamObject =  {
-      account: "admin",
-      defId: "2490000000690023",
-      nodeUsers: JSON.stringify([{nodeId: 'UserTask2', executors: [{...submitData.executors}]}]),
-      subject: "问题标题",
-      destination: 'UserTask2',
-      formName: "【提交工单】"
-    }
-
-    submitForm = { ...details.value , startFlowParamObject: startFlowParamObject }
+    // --- 发起新流程的提交 ---
+    submitForm = {
+      ...details.value,
+      startFlowParamObject: {
+        account: "admin",
+        defId: "2490000000690023",
+        nodeUsers: JSON.stringify([{ nodeId: 'UserTask2', executors: executorsToSubmit }]),
+        subject: "问题标题",
+        destination: 'UserTask2',
+        formName: "【提交工单】"
+      }
+    };
   }
 
   try {
-    loading.value = true
-    const response = await rectificationBookCommit(submitForm)
+    loading.value = true;
+    const response = await rectificationBookCommit(submitForm);
 
-    if(response.code === 200) {
-      ElMessage.success('提交成功');
+    if (response.code === 200) {
+      ElMessage.success(response.msg || '提交成功');
       router.push({ name: 'super-agency', query: { activeMenu: '监督台账' } });
     } else {
-      ElMessage.error('保存失败');
+      // 显示后端返回的错误信息，体验更好
+      ElMessage.error(response.msg || '提交失败，请稍后重试');
     }
   } catch (e) {
-    console.error('提交失败', e)
+    console.error('提交失败:', e);
+    ElMessage.error('请求失败，请检查网络连接');
   } finally {
     loading.value = false;
   }
-}
+};
 
-
-const extractedBtnList = ref<ExtractedBtn[]>([])
-
-// 根据流程ID获取流程
-const getProcessByTaskId = async () => {
-  if(!route.query.taskId) return
-
-  const taskId = route.query.taskId
-
-  try {
-    const response = await getTaskHandleDetailByTaskId(taskId)
-
-    if (response.outcomeUserMap) {
-      const extractedData = Object.keys(response.outcomeUserMap).map(key => {
-        return {
-          nodeId: key,
-          nodeName: response.outcomeUserMap[key].nodeName
-        };
-      });
-
-      extractedBtnList.value = extractedData
-    }
-
-  } catch (e) {
-    console.error('获取流程按钮失败', e)
-  }
-}
+provide('ledgerDetailData', details);
 
 // --- 生命周期 ---
 onMounted(() => {
   getLedgerDetailData();
   getRectProcessData();
   getRectEvaluationData();
-  getProcessByTaskId();
+  getExtractedBtnList();
 });
 </script>
 
-<style scoped lang="scss">
-.progress-details-container {
-  padding: 24px;
-}
-
-:deep(.el-card__header) {
-  padding: 16px 24px;
-}
-
+<style lang="scss" scoped>
 .details-card {
   .card-header {
     display: flex;
@@ -534,10 +524,6 @@ onMounted(() => {
   .page-header-title .font-bold {
     font-weight: 600;
   }
-}
-.page-title {
-  font-size: 18px;
-  font-weight: 600;
 }
 
 .summary-section {
@@ -561,38 +547,31 @@ onMounted(() => {
 }
 
 .section {
-  margin-top: 24px;
+  margin-bottom: 24px;
 }
-.section-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
   margin-bottom: 16px;
-  .section-title {
-    font-size: 16px;
-    font-weight: 600;
-    margin: 0;
-  }
-}
-
-.link-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.attachment-section {
   display: flex;
   align-items: center;
-  margin-top: 16px;
-  padding-left: 10px;
-  gap: 16px;
+  gap: 8px;
 }
-.attachment-label {
+.section-content {
+  color: #606266;
   font-size: 14px;
-  color: var(--el-text-color-secondary);
-  flex-shrink: 0;
+  line-height: 1.6;
 }
+.icon-circle {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  &.bg-blue { background-color: #409eff; }
+  &.bg-green { background-color: #67c23a; }
+  &.bg-orange { background-color: #e6a23c; }
+}
+
 .attachment-list {
   display: flex;
   gap: 24px;
@@ -602,22 +581,22 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 4px 8px;
+  padding: 8px 12px;
   background-color: #f5f7fa;
   border-radius: 4px;
+  cursor: pointer;
+
+  .file-info {
+    display: flex;
+    flex-direction: column;
+  }
   .file-name {
     font-size: 14px;
+    color: #303133;
   }
-  .file-size {
-    font-size: 12px;
-    color: #909399;
-  }
-  .download-btn {
-    margin-left: 8px;
-  }
-}
 
-:deep(.el-descriptions__label) {
-  color: #909399;
+  &:hover {
+    background-color: #eef2fb;
+  }
 }
 </style>

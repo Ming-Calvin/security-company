@@ -375,7 +375,7 @@ const handleSelectionChange = (selection: ProblemTableItem[]) => {
 };
 // 提交研判
 const handleSubmit = (row: ProblemTableItem) => {
-  router.push({ name: 'problem-detail', query: { id: row.id, opera: 'submit' } });
+  router.push({ name: 'problem-detail', query: { id: row.id, nodeId: 'UserTask1' } });
 };
 // 详情
 const handleDetail = (row: ProblemTableItem) => {

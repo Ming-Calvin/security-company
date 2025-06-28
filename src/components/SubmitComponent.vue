@@ -1,7 +1,9 @@
 <template>
   <el-dialog :title="dialogTitle"
              :model-value="modelValue"
+             @update:model-value="handleClose"
              width="700px"
+             top="30px"
              @close="resetForm"
              :close-on-click-modal="false"
   >
@@ -75,6 +77,9 @@ import type { ExtractedBtn } from '@/types/base.ts'
 // component
 import PeopleSelect from '@/components/PeopleSelect.vue';
 import FGLDSP from '@/views/submitComponent/FGLDSP.vue';
+import JDXXQR from '@/views/submitComponent/JDXXQR.vue';
+import ZGQD from '@/views/submitComponent/ZGQD.vue';
+import EvaluationModal from '@/views/submitComponent/EvaluationModal.vue';
 
 // api
 import type { PeopleSelectUserTable, User } from '@/types/base.ts';
@@ -86,7 +91,13 @@ const dialogTitle = ref('')
 const nextNodeName = ref('')
 
 const submitComponents = {
-  fgldsp: FGLDSP
+  fgldsp: FGLDSP,
+  jdxxqr: JDXXQR,
+  zgqd: ZGQD,
+  zgwczrbmjlzwpf: EvaluationModal,
+  zgwczgzrbmfgldpf: EvaluationModal,
+  zgwcjdbmjlpj: EvaluationModal,
+  zgwcjdzrbmfgldpf: EvaluationModal
 }
 const currentComponent = ref<keyof typeof submitComponents | string>('')
 
@@ -197,10 +208,11 @@ const handleSubmit = async () => {
   if (!formRef.value) return;
 
   try {
-    await SubmitRef.value?.submit()
+    await SubmitRef.value?.validate()
 
     await formRef.value.validate(async (valid) => {
       if (valid) {
+        await SubmitRef.value?.submit()
         emit('confirm', formData);
         handleClose();
       } else {
@@ -224,7 +236,7 @@ const resetForm = () => {
 const props = defineProps<{
   modelValue: boolean; // 接收来自 v-model 的值
 }>();
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue'], 'confirm');
 
 defineExpose({ init });
 

@@ -81,12 +81,12 @@ const formData = reactive<any>({
 
 // 表单验证规则
 const rules = reactive<FormRules>({
-  fRectifyDept: [{ required: true, message: '请选择整改责任部门', trigger: 'blur' }],
-  fDeptSubjectInspection: [{ required: true, message: '请选择监督责任部门', trigger: 'blur' }],
+  fRectifyDept: [{ required: true, message: '请选择整改责任部门', trigger: 'change' }],
+  fDeptSubjectInspection: [{ required: true, message: '请选择监督责任部门', trigger: 'change' }],
 });
 
 // 提交方法
-const submit = async () => {
+const validate = async () => {
   if (!formRef.value) return
 
   try {
@@ -98,6 +98,8 @@ const submit = async () => {
     throw error;
   }
 };
+
+const submit = () => {}
 
 // =========== 人员选择器 ===========
 // InstanceType -- 获取 defineExpose 暴露的方法
@@ -179,7 +181,7 @@ const handleDeptSelected = (selected: { NAME_: string, ID_: string }[]) => {
 };
 
 // =========== 父子组件通信 ===========
-defineExpose({ submit });
+defineExpose({ submit, validate });
 </script>
 
 <style lang="scss" scoped>

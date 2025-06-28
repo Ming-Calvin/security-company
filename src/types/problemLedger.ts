@@ -234,3 +234,40 @@ export interface startFlowParamObject {
 export interface ProblemDetailWithStartFlow extends LedgerFormData {
   startFlowParamObject: startFlowParamObject;
 }
+
+// 附件
+export interface Attachment {
+  name: string;
+  size: string;
+  url: string;
+}
+
+// 问题详情
+export interface ProblemDetails {
+  // 顶部摘要
+  rectifyStatusText: string;
+  superviseStatusText: string;
+  rectifyDuration: string;
+  overallScore: string | number;
+
+  // 基础信息
+  fSuperviseItems: string;
+  fProblemDescription: string;
+  relatedBooks: { id: string, name: string }[];
+  id: string;
+  fSuperviseType: string;
+  fSuperviseSource: string;
+  fRectifyDept: string;
+  fRectifyUser: string;
+  fIsIllegal: 0 | 1;
+  fSuperviseDept: string;
+  fSuperviseUser: string;
+  fIsAssetTransfer: 0 | 1;
+  attachments: Attachment[];
+
+  // 整改情况
+  fRectifyMeasure: string;
+  fRectifyPlantime: number;
+  fRectifyStarttime: number;
+  fRectifyEndtime: number;
+}
