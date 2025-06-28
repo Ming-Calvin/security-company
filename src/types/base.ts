@@ -101,3 +101,69 @@ export interface GetRoleApiResponse {
   roles: string[];
   user: UserInfo;
 }
+
+// 附件上传返回
+export interface ServerFileResponse {
+  id: string;
+  fileName: string;
+}
+
+// 获取当前环节按钮参数
+export interface getNodeSetParams {
+  defId: string;
+  nodeId: string;
+}
+
+// 流程按钮类型
+export interface ExtractedBtn {
+  nodeId: string,
+  componentName: string,
+  nodeName: string,
+  buttonName: string,
+  type: string,
+}
+
+// 获取当前环节按钮返回
+export interface getNodeSetResult {
+  alias: string,
+  beforeScript: string,
+  name: string,
+}
+
+// 流程定义参数
+interface Executor {
+  id: string;
+  name: string;
+}
+interface NodeUser {
+  nodeId: string;
+  executors: Executor[];
+}
+interface DoNextParams {
+  nodeUsers: string;
+  account: string;
+  taskId: string;
+  actionName: string;
+  opinion: string;
+  formType: 'inner';
+  jumpType: 'select';
+  destination: string;
+  opinionFiles: any[];
+  formName: string;
+}
+interface StartFlowParams {
+  account: string;
+  defId: string;
+  nodeUsers: string; // 将是 NodeUser[] 的 JSON 字符串
+  subject: string;
+  destination: string;
+  formName: string;
+}
+
+export type SubmitPayload = BaseDetails & ({
+  DoNextParamExtObject: DoNextParams;
+  startFlowParamObject?: never; // 确保两种参数对象不同时存在
+} | {
+  startFlowParamObject: StartFlowParams;
+  DoNextParamExtObject?: never; // 确保两种参数对象不同时存在
+});

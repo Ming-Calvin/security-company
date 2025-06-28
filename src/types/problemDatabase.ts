@@ -104,9 +104,9 @@ export interface ProblemSavePayload {
 export interface ProblemDetail {
   id: string;
   refId: string;
-  fDiscoverTime: string | Number;
+  fDiscoverTime: number | undefined;
   fEntryTime: string;
-  fAdviceTime: string | Number;
+  fAdviceTime: number | undefined;
   fInspectionDept: string;
   fInspectionDeptId: string;
   fDeptSubjectInspection: string;
@@ -116,9 +116,9 @@ export interface ProblemDetail {
   fProblemSource: string;
   fProblemType: string;
   fDocuments: string;
-  fIsIllegal: string;
-  fIsAssetTransfer: string;
-  fIsCommit: string;
+  fIsIllegal: 0 | 1 | string;
+  fIsAssetTransfer: 0 | 1 | string;
+  fIsCommit: 0 | 1 | string;
   fOtherAdvice: string;
   fProposer: string;
   fProposerId: string;
@@ -209,4 +209,11 @@ export interface ProblemDatabaseSaveResponse {
   code: number;
   msg: string;
   data: string;
+}
+
+// 附件类型
+export interface AttachmentFile {
+  name: string;
+  size: string;
+  url: string;
 }

@@ -1,6 +1,12 @@
 import request from '@/services/request.ts';
 // 通用类型
-import type { ApiResponse, QuestionOrderTaskIdParams, QuestionOrderTaskIdResult, GetRoleApiResponse } from '@/types/base.ts'
+import type {
+  ApiResponse,
+  QuestionOrderTaskIdParams,
+  QuestionOrderTaskIdResult,
+  GetRoleApiResponse,
+  getNodeSetParams, getNodeSetResult
+} from '@/types/base.ts'
 import config from '@/services/config.ts'
 import { getPortalToken } from '@/utils/auth.ts'
 
@@ -34,11 +40,25 @@ export function getRole() {
   })
 }
 
+// 获取门户tgt
 export function loginByTgt(code: string) {
-  return request<any>({
+  return request<unknown>({
     baseURL: config.portalApi,
     url: '/loginByTgt?code=' + code,
     method: 'get'
   })
 }
+
+// 获取当前环节按钮
+export function getNodeSet(params: getNodeSetParams) {
+  return request<getNodeSetResult[]>({
+    url: '/flow/def/getNodeSet',
+    method: 'post',
+    params: {
+      action: 1,
+      ...params,
+    },
+  })
+}
+
 

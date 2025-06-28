@@ -59,3 +59,13 @@ export function deepClone<T>(obj: T, hash = new WeakMap()): T {
 
   return clone;
 }
+
+// 时间切换函数
+export function formatDate(timestamp: number | undefined) {
+  if (!timestamp) return 'N/A';
+  const date = new Date(timestamp);
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};

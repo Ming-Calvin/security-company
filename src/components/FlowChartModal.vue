@@ -28,6 +28,8 @@ import { Background } from '@vue-flow/background';
 import { Controls } from '@vue-flow/controls';
 import type { Node, Edge } from '@vue-flow/core';
 
+import '@vue-flow/controls/dist/style.css'
+
 // --- 3. 定义 Props 和 Emits ---
 
 // 组件通过 props 接收外部数据

@@ -48,9 +48,10 @@ declare module 'vue' {
     ElUpload: typeof import('element-plus/es')['ElUpload']
     FileUpload: typeof import('./../components/FileUpload.vue')['default']
     FlowChartModal: typeof import('./../components/FlowChartModal.vue')['default']
-    PeopeleSelect: typeof import('./../components/PeopeleSelect.vue')['default']
+    PeopleSelect: typeof import('./../components/PeopleSelect.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    SubmitComponent: typeof import('./../components/SubmitComponent.vue')['default']
   }
   export interface GlobalDirectives {
     vLoading: typeof import('element-plus/es')['ElLoadingDirective']

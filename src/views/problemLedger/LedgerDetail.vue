@@ -210,7 +210,7 @@ import EvaluationModal from './EvaluationModal.vue';
 
 import FlowChartModal from '@/components/FlowChartModal.vue';
 import type { Node, Edge } from '@vue-flow/core';
-import SubmitComponent from '@/views/problemDatabase/SubmitComponent.vue'
+import SubmitComponent from '@/components/SubmitComponent.vue'
 
 // 更新进展列表
 const progressList = ref([])
@@ -414,7 +414,7 @@ const complexEdges = ref<Edge[]>([
 
 const isApprovalModalVisible = ref(false);
 // 提交组件
-const submitComponent = ref<InstaneType<typeof SubmitComponent> | null>(null)
+const submitComponent = ref<InstanceType<typeof SubmitComponent> | null>(null)
 
 const nodeId = ref('')
 

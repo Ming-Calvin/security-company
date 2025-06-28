@@ -145,7 +145,7 @@
     </el-card>
   </div>
 
-  <PeopeleSelect
+  <PeopleSelect
     ref="selectPeopleRef"
     title="选择检查部门"
     :select-user="initialSelectedUsers"
@@ -155,7 +155,7 @@
     @select-people="handleUserSelected"
   />
 
-  <PeopeleSelect
+  <PeopleSelect
     ref="selectOrgRef"
     title="选择检查部门"
     :select-user="initialSelectedOrgs"
@@ -178,7 +178,7 @@ import { saveLedger, type LedgerFormData } from '@/api/problemLedger.ts';
 import { getTreeList, getUserTable, getOrgTable } from '@/api/problemDatabase.ts'
 
 // 人员选择器
-import PeopeleSelect from '@/components/PeopeleSelect.vue';
+import PeopleSelect from '@/components/PeopleSelect.vue';
 
 const router = useRouter();
 const formRef = ref<FormInstance>();
@@ -265,8 +265,8 @@ const openLedgerSelector = () => { ElMessage.info('打开关联台账选择器')
 
 // 人员选择器
 // InstanceType -- 获取 defineExpose 暴露的方法
-const selectPeopleRef = ref<InstanceType<typeof PeopeleSelect> | null>(null);
-const selectOrgRef = ref<InstanceType<typeof PeopeleSelect> | null>(null);
+const selectPeopleRef = ref<InstanceType<typeof PeopleSelect> | null>(null);
+const selectOrgRef = ref<InstanceType<typeof PeopleSelect> | null>(null);
 
 // 存储当前打开人员选择器的字段
 const currentTargetProp = ref({ nameField: '', idField: '' });

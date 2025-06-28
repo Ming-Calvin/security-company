@@ -194,7 +194,7 @@
                       :limit="10"
                       :max-size="20"
                       tip="上传文件内容支持图片、文件，大小不超过20M。图片格式支持：jpg、jpeg、png、bmp；文件格式支持：doc、docx、xls、xlsx、pdf、zip、rar"
-                      :on-change="handleChange"
+                      @change="onFileListChange"
           />
         </el-form-item>
       </el-form>
@@ -223,21 +223,22 @@ import { ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus';
 import { Plus, Link } from '@element-plus/icons-vue';
 import type { TreeNode } from 'element-plus/es/components/tree/src/tree.type';
+import type { UploadFile, UploadFiles, UploadUserFile } from 'element-plus'
 
 // api
 import { getTreeList, getOrgTable, saveProblem, getProblemDetails } from '@/api/problemDatabase.ts'
 import type { ProblemSavePayload } from '@/types/problemDatabase.ts'
 
 // 人员选择器
-import PeopleSelect from '@/components/PeopeleSelect.vue';
+import PeopleSelect from '@/components/PeopleSelect.vue';
 import type {
   PeopleSelectDeptParams,
   PeopleSelectTreeResult,
-  PeopleSelectUserTable
+  PeopleSelectUserTable,
+  ServerFileResponse
 } from '@/types/base.ts'
 
-// 上传组件
-import type { UploadUserFile, UploadProps } from 'element-plus';
+// utils
 import { deepClone } from '@/utils'
 
 // 路由
@@ -423,7 +424,7 @@ const handleDeptSelected = (selected: { NAME_: string, ID_: string }[]) => {
 // =========== 文件上传 ===========
 const fileList = ref<UploadUserFile[]>([]);
 
-const handleChange: UploadProps['onChange'] = (uploadFile, uploadFiles) => {
+const onFileListChange = (uploadFiles: any[]) => {
   const uploadList = uploadFiles.map(item => {
     return {
       name: item.fileName,

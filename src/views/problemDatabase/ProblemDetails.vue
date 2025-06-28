@@ -1,26 +1,25 @@
 <template>
-  <div class="page-container">
+  <div p-4>
     <el-card class="details-card">
       <template #header>
         <div class="card-header">
-          <el-page-header @back="handleGoBack" class="page-header-title">
+          <el-page-header @back="handleGoBack"
+                          class="page-header-title">
             <template #content>
               <span class="font-bold">问题详情</span>
             </template>
           </el-page-header>
+
           <div class="header-actions">
             <el-button v-for="(item, index) in extractedBtnList"
                        type="primary"
                        :key="index"
-                       @click="openApprovalModal(item.nodeId)"
+                       @click="openApprovalModal(item)"
             >
-              {{ item.nodeName }}
+              {{ item.buttonName }}
             </el-button>
-            <el-button type="primary" v-if="!route.query.taskId" @click="openApprovalModal('UserTask2')">提交研判</el-button>
-<!--            <el-button>流转记录</el-button>-->
+            <el-button>流转记录</el-button>
             <el-button @click="showFlowChartModal = true">流程图</el-button>
-            <el-button>编辑</el-button>
-            <el-button>删除</el-button>
           </div>
         </div>
       </template>
@@ -31,6 +30,7 @@
             <span class="icon-circle bg-blue"></span>
             检查事项内容
           </h3>
+
           <p class="section-content">{{ details.fInspectionItems }}</p>
         </div>
 
@@ -39,6 +39,7 @@
             <span class="icon-circle bg-green"></span>
             问题描述
           </h3>
+
           <p class="section-content">{{ details.fProblemDescription }}</p>
         </div>
 
@@ -47,6 +48,7 @@
             <span class="icon-circle bg-orange"></span>
             基础信息
           </h3>
+
           <el-descriptions :column="3" border>
             <el-descriptions-item label="编号">{{ details.id }}</el-descriptions-item>
             <el-descriptions-item label="发现问题时间">{{ formatDate(details.fDiscoverTime) }}</el-descriptions-item>
@@ -74,8 +76,12 @@
           </h3>
 
           <div class="attachment-list">
-            <div v-for="(file, index) in attachmentList" :key="index" class="attachment-item">
+            <div v-for="(file, index) in attachmentList"
+                 :key="index"
+                 class="attachment-item">
+
               <el-icon :size="24" color="#ff6b6b"><Document /></el-icon>
+
               <div class="file-info" @click="handleDownload(file)">
                 <span class="file-name">{{ file.name }}</span>
               </div>
@@ -86,11 +92,10 @@
     </el-card>
   </div>
 
-  <SubmitComponent
-    ref="submitComponent"
-    v-if="isApprovalModalVisible"
-    v-model="isApprovalModalVisible"
-    @confirm="handleModalConfirm"
+  <SubmitComponent ref="SubmitComponentRef"
+                   v-if="isApprovalModalVisible"
+                   v-model="isApprovalModalVisible"
+                   @confirm="handleModalConfirm"
   />
 
   <FlowChartModal
@@ -102,33 +107,75 @@
 </template>
 
 <script setup lang="ts">
+// vue
 import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+
+// el-plus
 import { Link, Document } from '@element-plus/icons-vue';
-import type { ProblemDetail } from '@/types/problemDatabase.ts'
-import { getProblemDetails, problemWarehouseCommit } from '@/api/problemDatabase'
-import SubmitComponent from '@/views/problemDatabase/SubmitComponent.vue'
-import FlowChartModal from '@/components/FlowChartModal.vue'
-import type { Node, Edge, Position } from '@vue-flow/core';
 import { ElMessage } from 'element-plus'
-import { getTaskHandleDetailByTaskId } from '@/api/base.ts'
 
-interface AttachmentFile {
-  name: string;
-  size: string;
-  url: string;
-}
+// api
+import type { ProblemDetail, AttachmentFile } from '@/types/problemDatabase.ts'
+import { getProblemDetails, problemWarehouseCommit } from '@/api/problemDatabase'
+import { getNodeSet } from '@/api/base.ts'
+import type { ExtractedBtn, SubmitPayload, Executor } from '@/types/base.ts'
+import request from '@/services/request.ts';
 
-// --- 响应式状态 ---
+// components
+import SubmitComponent from '@/components/SubmitComponent.vue'
+import FlowChartModal from '@/components/FlowChartModal.vue'
+import type { Node, Edge } from '@vue-flow/core';
+
+// until
+import { formatDate } from '@/utils/index';
+
+// 路由
 const router = useRouter();
 const route = useRoute();
+
+// =========== 头部 ===========
+// 返回上一页
+const handleGoBack = () => {
+  router.back();
+};
+
+const extractedBtnList = ref<ExtractedBtn[]>([])
+
+// 获取展示按钮
+const getExtractedBtnList = async () => {
+  const params = {
+    defId: "2490000000310172",
+    nodeId: route.query.nodeId || 'UserTask1',
+  }
+
+  try {
+    const response = await getNodeSet(params)
+
+    extractedBtnList.value = response.map(item => {
+      const [nextNodeId, component = null] = item.alias.split('_')
+
+      return {
+        nodeId: nextNodeId,
+        componentName: component,
+        nodeName: item.beforeScript,
+        buttonName: item.name,
+        type: 'problemDatabase'
+      }
+    })
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+// =========== 详情表单 ===========
 const loading = ref(true);
 const details = ref<ProblemDetail>({
   id: '',
   refId: '',
-  fDiscoverTime: '',
+  fDiscoverTime: 0,
   fEntryTime: '',
-  fAdviceTime: '',
+  fAdviceTime: 0,
   fInspectionDept: '',
   fInspectionDeptId: '',
   fDeptSubjectInspection: '',
@@ -150,24 +197,18 @@ const details = ref<ProblemDetail>({
   fChargerId: '',
 });
 
-const isApprovalModalVisible = ref(false);
-
+// 附件列表
 const attachmentList = computed((): AttachmentFile[] => {
   if (!details.value?.fDocuments) return [];
   return JSON.parse(details.value.fDocuments);
 });
-
-// --- 事件处理 ---
-const handleGoBack = () => {
-  router.back();
-};
-
-const handleDownload = async (file: Attachment) => {
+// 下载
+const handleDownload = async (file: AttachmentFile) => {
   try {
     const response = await request({
       url: `/system/file/download?id=${file.id}`,
       method: 'get',
-      responseType: 'blob', // [关键] 告诉 Axios 期望接收二进制数据
+      responseType: 'blob',
     });
 
     // 创建一个 Blob URL
@@ -190,24 +231,20 @@ const handleDownload = async (file: Attachment) => {
   }
 };
 
-// --- 工具函数 ---
-const formatDate = (timestamp: number | undefined) => {
-  if (!timestamp) return '-';
-  const date = new Date(timestamp);
-
-  return date.toLocaleDateString('zh-CN');
-};
+// =========== 提交研判 ===========
+const isApprovalModalVisible = ref(false);
 
 // 获取问题详情
 const getProblemDetailData = async () => {
+  const params = {
+    id: route.query.id,
+    procInstId: route.query.procInstId,
+  }
+
+
   try {
     loading.value = true;
-    const response = await getProblemDetails(
-      {
-        id: route.query.id,
-        procInstId: route.query.procInstId
-      }
-    );
+    const response = await getProblemDetails(params);
 
     if (response.success) {
       details.value = response.data;
@@ -217,81 +254,92 @@ const getProblemDetailData = async () => {
     }
 
   } catch (err) {
-    ElMessage.error('失误：', err);
+    console.error(err)
+    ElMessage.error('获取详情失败');
   } finally {
     loading.value = false;
   }
 };
 
 // 提交组件
-const submitComponent = ref<InstaneType<typeof SubmitComponent> | null>(null)
+const SubmitComponentRef = ref<InstanceType<typeof SubmitComponent>>()
 
 const nodeId = ref('')
 
+const currentNodeBtnData = ref('')
+
 // 打开弹窗
-const openApprovalModal = (id?: string) => {
-  isApprovalModalVisible.value = true;
-  submitComponent.value?.init(id);
-  nodeId.value = id
+const openApprovalModal = async (item: ExtractedBtn) => {
+  isApprovalModalVisible.value = true
+  await nextTick();
+  SubmitComponentRef.value?.init(item);
+  currentNodeBtnData.value = item
 };
-
-const handleModalConfirm = (submitData: { executors: { id: string, name: string }, opinion: string }) => {
-  submit(submitData)
-};
-
-
 
 // 提交研判
-const submit = async (submitData: { executors: { id: string, name: string }, opinion: string }) => {
-  // 提交数据
-  let submitForm = {}
+const handleModalConfirm = async (submitData: SubmitPayload) => {
+  // 提交表单
+  let submitForm: SubmitPayload;
 
-  if(route.query.taskId) {
-    const DoNextParamExtObject =  {
-      "nodeUsers": JSON.stringify([{nodeId: nodeId.value, executors: [{...submitData.executors}]}]),
-      "account": "admin",
-      "taskId": route.query.taskId,
-      "actionName": "agree",
-      "opinion": submitData.opinion,
-      "formType": "inner",
-      "jumpType": "select",
-      "destination": nodeId.value,
-      "opinionFiles": [],
-      "formName": ""
-    }
+  const executorsToSubmit: Executor[] = [submitData.executors];
 
-    submitForm = { ...details.value , DoNextParamExtObject: DoNextParamExtObject }
+  if (route.query.taskId) {
+    // --- 审批流程中的提交 ---
+    submitForm = {
+      ...details.value,
+      DoNextParamExtObject: {
+        nodeUsers: JSON.stringify([{ nodeId: nodeId.value, executors: executorsToSubmit }]),
+        account: "admin",
+        taskId: route.query.taskId as string,
+        actionName: "agree",
+        opinion: submitData.opinion,
+        formType: "inner",
+        jumpType: "select",
+        destination: nodeId.value,
+        opinionFiles: [],
+        formName: currentNodeBtnData.value.nodeName
+      }
+    };
   } else {
-    const startFlowParamObject =  {
-      account: "admin",
-      defId: "2490000000310172",
-      nodeUsers: JSON.stringify([{nodeId: 'UserTask2', executors: [{...submitData.executors}]}]),
-      subject: "问题标题",
-      destination: 'UserTask2',
-      formName: "【提交工单】"
-    }
-
-    submitForm = { ...details.value , startFlowParamObject: startFlowParamObject }
+    // --- 发起新流程的提交 ---
+    submitForm = {
+      ...details.value,
+      startFlowParamObject: {
+        account: "admin",
+        defId: "2490000000310172",
+        nodeUsers: JSON.stringify([{ nodeId: 'UserTask2', executors: executorsToSubmit }]),
+        subject: "问题标题",
+        destination: 'UserTask2',
+        formName: "【提交工单】"
+      }
+    };
   }
 
-  try {
-    loading.value = true
-    const response = await problemWarehouseCommit(submitForm)
 
-    if(response.code === 200) {
-      ElMessage.success('提交成功');
+  console.log(submitForm, 'submitForm')
+  return
+
+
+  try {
+    loading.value = true;
+    const response = await problemWarehouseCommit(submitForm);
+
+    if (response.code === 200) {
+      ElMessage.success(response.msg || '提交成功');
       router.push({ name: 'super-agency' });
     } else {
-      ElMessage.error('保存失败');
+      // 显示后端返回的错误信息，体验更好
+      ElMessage.error(response.msg || '提交失败，请稍后重试');
     }
   } catch (e) {
-    console.error('提交失败', e)
+    console.error('提交失败:', e);
+    ElMessage.error('请求失败，请检查网络连接');
   } finally {
     loading.value = false;
   }
-}
+};
 
-/*------流程图组件------*/
+// =========== 流程图组件 ===========
 const showFlowChartModal = ref(false);
 
 const flowNodes = ref<Node[]>([
@@ -309,51 +357,14 @@ const flowEdges = ref<Edge[]>([
   // { id: 'e4-2', source: '4', target: '2', type: 'smoothstep', label: '退回', sourceHandle: 'top', targetHandle: 'top' },
 ]);
 
-// 流程按钮类型
-interface ExtractedBtn {
-  nodeId: string,
-  nodeName: string,
-}
-
-const extractedBtnList = ref<ExtractedBtn[]>([])
-
-// 根据流程ID获取流程
-const getProcessByTaskId = async () => {
-  if(!route.query.taskId) return
-
-  const taskId = route.query.taskId
-
-  try {
-    const response = await getTaskHandleDetailByTaskId(taskId)
-
-    if (response.outcomeUserMap) {
-      const extractedData = Object.keys(response.outcomeUserMap).map(key => {
-        return {
-          nodeId: key,
-          nodeName: response.outcomeUserMap[key].nodeName
-        };
-      });
-
-      extractedBtnList.value = extractedData
-    }
-
-  } catch (e) {
-    console.error('获取流程按钮失败', e)
-  }
-}
-
-// --- 生命周期 ---
+// =========== 生命周期 ===========
 onMounted(() => {
   getProblemDetailData();
-  getProcessByTaskId();
+  getExtractedBtnList();
 });
 </script>
 
 <style lang="scss" scoped>
-/* 样式与上一版相同，无需修改 */
-.page-container {
-  padding: 20px;
-}
 .details-card {
   .card-header {
     display: flex;
@@ -368,7 +379,6 @@ onMounted(() => {
 .section {
   margin-bottom: 24px;
 }
-
 .section-title {
   font-size: 16px;
   font-weight: 600;
@@ -377,13 +387,11 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
 }
-
 .section-content {
   color: #606266;
   font-size: 14px;
   line-height: 1.6;
 }
-
 .icon-circle {
   display: inline-block;
   width: 12px;
@@ -399,7 +407,6 @@ onMounted(() => {
   gap: 24px;
   flex-wrap: wrap;
 }
-
 .attachment-item {
   display: flex;
   align-items: center;
@@ -417,27 +424,9 @@ onMounted(() => {
     font-size: 14px;
     color: #303133;
   }
-  .file-size {
-    font-size: 12px;
-    color: #909399;
-  }
 
   &:hover {
     background-color: #eef2fb;
   }
-}
-
-.attachment-previews {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-  margin-top: 16px;
-}
-
-.preview-image {
-  width: 150px;
-  height: 100px;
-  border-radius: 6px;
-  border: 1px solid #dcdfe6;
 }
 </style>
